@@ -1,7 +1,14 @@
 # spotify tracker
 #
 # to do:
-#   - writing out changes in playlists
+#   - writing out changes in playlists, output should look something like this:
+#       time
+#          user1:
+#               + playlist 2
+#               - playlist 1
+#          user2:
+#               ...
+#                                                   
 #   - apply all tracking for playlists to song in playlists
 #   - cleanup
 #   - more cleanup
