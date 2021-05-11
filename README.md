@@ -1,1 +1,1 @@
-# spotify_playlist_tracker
+# Spotify Playlist Tracker
