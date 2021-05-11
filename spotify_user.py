@@ -1,5 +1,4 @@
-import spotipy
-from collections import ChainMap
+from spotipy import SpotifyException
 
 
 class Spotify_Playlist:
@@ -16,7 +15,7 @@ class Spotify_Playlist:
                                                    offset=offset,
                                                    fields='items.track.id,total',
                                                    additional_types=['track'])
-            
+
             if len(response['items']) == 0:
                 break
 
@@ -38,7 +37,7 @@ class Spotify_User:
         self.user_playlists = []
         try:
             playlists = self.spotify.user_playlists(self.id)
-        except(spotipy.exceptions.SpotifyException):
+        except SpotifyException:
             pass
 
         for playlist in playlists["items"]:
