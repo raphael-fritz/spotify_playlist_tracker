@@ -1,6 +1,4 @@
 /.cache
-/config.py
-/usernames.txt
-/username_backup.txt
-/user_playlists.txt
 /__pycache__
+/config.py
+/*.txt
