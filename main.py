@@ -156,7 +156,8 @@ if __name__ == '__main__':
         print(pl_current)
 
         # get changes
-        diff = list(set(set(pl_current)-set(pl_baseline))) # currently only works for additions 
+        # currently only works for additions
+        diff = list(set(set(pl_current)-set(pl_baseline)))
         print(diff)
 
         # write playlist file
@@ -166,7 +167,8 @@ if __name__ == '__main__':
 
         # write playlist changes file
         with open(pl_changes_file_str, "a", encoding="utf-8") as diff_file:
-            diff_file.write(str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
+            diff_file.write(
+                str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
             for change in diff:
                 diff_file.write(str(change+"\n"))
 
