@@ -6,8 +6,9 @@ class Spotify_Playlist:
     def __init__(self, spotify, uri):
         self.spotify = spotify
         self.uri = uri
+        self.tracks = self.get_tracks()
 
-    def tracks(self):
+    def get_tracks(self):
         offset = 0
         tracks = []
         while True:
@@ -32,8 +33,9 @@ class Spotify_User:
         self.spotify = spotify
         self.name = user_name
         self.id = user_id
+        self.playlists = self.get_playlists()
 
-    def playlists(self):
+    def get_playlists(self):
         self.user_playlists = []
         try:
             playlists = self.spotify.user_playlists(self.id)
