@@ -13,6 +13,7 @@
 #   - apply all tracking for playlists to song in playlists
 #   x cleanup
 #   - more cleanup
+#   - check paths for bad chars
 
 import time
 import datetime
