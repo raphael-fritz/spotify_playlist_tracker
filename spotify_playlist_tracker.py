@@ -12,7 +12,7 @@ def spotify_authentication(client_id, client_secrect, redirect_uri, scope):
     return spotipy.Spotify(auth_manager=auth_manager)
 
 
-def get_usernames():
+def get_spotify_users(spotify):
     usernames = []
     with open("usernames.txt") as f:
         for username in f:
@@ -22,11 +22,7 @@ def get_usernames():
                 "id": id
             }
             usernames.append(user)
-    return usernames
 
-
-def get_spotify_users(spotify):
-    usernames = get_usernames()
     user_list = []
     for username in usernames:
         user = Spotify_User(spotify, username['name'], username['id'])
