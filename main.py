@@ -10,10 +10,10 @@
 #               ...
 #   x implement change tracking for removals
 #       -> implement + and - as indicators for addition/removal
-#   - apply all tracking for playlists to song in playlists
+#   - apply all tracking for playlists to songs in playlists
 #   x cleanup
 #   - more cleanup
-#   - check paths for bad chars
+#   x check paths for bad chars
 
 import time
 import datetime
