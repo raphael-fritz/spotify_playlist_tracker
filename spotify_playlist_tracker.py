@@ -2,19 +2,20 @@ import time
 import datetime
 import spotipy
 import re
+from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 from pathlib import Path
 from spotify_user import Spotify_User
 
 
-def rpl_bad_chars(str: str):
+def rpl_bad_chars(string: str):
     bad_chars = {'ä': 'ae', 'ö': 'oe', 'ü': 'ue',
                  'Ä': 'AE', 'Ö': 'OE', 'Ü': 'UE', 'ß': 'ss', '.': '_'}
     rpl_pattern = r"(\s)|([^\w\-_\.\ ])"
 
     for char in bad_chars:
-        str = str.replace(char, bad_chars[char])
-    return re.sub(rpl_pattern, '_', str)
+        string = string.replace(char, bad_chars[char])
+    return re.sub(rpl_pattern, '_', string)
 
 
 def spotify_authentication(client_id, client_secrect, redirect_uri, scope):
@@ -23,10 +24,10 @@ def spotify_authentication(client_id, client_secrect, redirect_uri, scope):
     return spotipy.Spotify(auth_manager=auth_manager)
 
 
-def get_spotify_users(spotify):
+def get_spotify_users(spotify: Spotify):
     usernames = []
-    with open("usernames.txt") as f:
-        for username in f:
+    with open("usernames.txt") as username_list:
+        for username in username_list:
             (name, id) = username.split()
             user = {
                 "name": name,
@@ -41,9 +42,42 @@ def get_spotify_users(spotify):
     return user_list
 
 
+def get_playlists(user: Spotify_User):
+    playlists = []
+    for pl in user.playlists:
+        playlists.append(pl['name'])
+    return playlists
+
+
+def get_path_strings(username: str, playlists: list):
+    usr_str = rpl_bad_chars(username)
+    pl_str = usr_str + "/playlists.txt"
+    pl_changes_str = usr_str + "/playlists_changes.txt"
+    pl_path_list = []
+    songs_list = []
+    songs_changes_list = []
+
+    for playlist in playlists:
+        playlist = rpl_bad_chars(playlist)
+        pl_path_list.append(str(usr_str + "/" + playlist))
+        songs_list.append(str(usr_str + "/" + playlist +
+                              "/" + playlist + "_songs.txt"))
+        songs_changes_list.append(
+            str(usr_str + "/" + playlist + "/" + playlist + "_songs_changes.txt"))
+
+    return usr_str, pl_str, pl_changes_str, pl_path_list, songs_list, songs_changes_list
+
+
+def get_diff(list1: list, list2: list):
+    diff_p = list(set(set(list1)-set(list2)))
+    diff_n = list(set(set(list2)-set(list1)))
+    return (diff_p, diff_n)
+
+
 def create_dir_structure(user_list):
     for user in user_list:
-        usr_str = rpl_bad_chars(user.name)
+        usr_str, pl_str, pl_changes_str, pl_path_list, songs_list, songs_changes_list = get_path_strings(
+            user.name, get_playlists(user))
 
         # check if user directory exists and create if not
         if not Path(usr_str).is_dir():
@@ -51,109 +85,59 @@ def create_dir_structure(user_list):
             Path(usr_str).mkdir()
 
         # check if playlists file exists and create if not
-        pl_str = usr_str + "/playlists.txt"
         if not Path(pl_str).is_file():
             print(pl_str + " doesn't exist and will be created")
             Path(pl_str).touch()
 
         # check if playlists_changes file exists and create if not
-        pl_str = usr_str + "/playlists_changes.txt"
-        if not Path(pl_str).is_file():
-            print(pl_str + " doesn't exist and will be created")
-            Path(pl_str).touch()
-
-        # get playlists
-        playlists = []
-        for pl in user.playlists:
-            playlists.append(pl['name'])
+        if not Path(pl_changes_str).is_file():
+            print(pl_changes_str + " doesn't exist and will be created")
+            Path(pl_changes_str).touch()
 
         # check if playlist directories exists and create if not
-        for i in range(playlists.__len__()):
-            playlist = rpl_bad_chars(playlists[i])
-            pl_path_str = usr_str + "/" + playlist
-            songs_str = pl_path_str + "/" + playlist + "_songs.txt"
-            songs_changes_str = pl_path_str + "/" + playlist + "_songs_changes.txt"
+        for i in range(pl_path_list.__len__()):
 
-            if not Path(pl_path_str).is_dir():
-                print(pl_path_str + " doesn't exist and will be created")
-                Path(pl_path_str).mkdir()
+            if not Path(pl_path_list[i]).is_dir():
+                print(pl_path_list[i] + " doesn't exist and will be created")
+                Path(pl_path_list[i]).mkdir()
 
-            if not Path(songs_str).is_file():
-                print(songs_str + " doesn't exist and will be created")
-                Path(songs_str).touch()
+            if not Path(songs_list[i]).is_file():
+                print(songs_list[i] + " doesn't exist and will be created")
+                Path(songs_list[i]).touch()
 
-            if not Path(songs_changes_str).is_file():
-                print(songs_changes_str + " doesn't exist and will be created")
-                Path(songs_changes_str).touch()
+            if not Path(songs_changes_list[i]).is_file():
+                print(songs_changes_list[i] +
+                      " doesn't exist and will be created")
+                Path(songs_changes_list[i]).touch()
 
 
 def update_dir_structure(user_list):
     for user in user_list:
-        usr_str = rpl_bad_chars(user.name)
-        pl_file_str = usr_str + "/playlists.txt"
-        pl_changes_file_str = usr_str + "/playlists_changes.txt"
+        pl_str, pl_changes_str = get_path_strings(
+            user.name, get_playlists(user))[1:3]
+        pl_current = get_playlists(user)
         pl_baseline = []
-        pl_current = []
-
-        for pl in user.playlists:
-            pl_current.append(pl['name'])
 
         # read playlist file
-        with open(pl_file_str, "r", encoding="utf-8") as pl_file:
+        with open(pl_str, "r", encoding="utf-8") as pl_file:
             for line in pl_file.readlines():
                 pl_baseline.append(line.strip("\n"))
 
-        # get changes
-        diff1 = list(set(set(pl_current)-set(pl_baseline)))
-        diff2 = list(set(set(pl_baseline)-set(pl_current)))
-
         # write playlist file
-        with open(pl_file_str, "w", encoding="utf-8") as pl_file:
+        with open(pl_str, "w", encoding="utf-8") as pl_file:
             for pl in pl_current:
                 pl_file.write(str(pl+"\n"))
 
         # write playlist changes file
-        with open(pl_changes_file_str, "a", encoding="utf-8") as diff_file:
-            if diff1 or diff2:
+        with open(pl_changes_str, "a", encoding="utf-8") as diff_file:
+            (diff_p, diff_n) = get_diff(pl_current, pl_baseline)
+            if diff_p or diff_n:
                 print("\n" + user.name + ":")
                 diff_file.write(
                     str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
-                for change in diff1:
+                for change in diff_p:
                     diff_str = str("+ " + change + "\n")
                     diff_file.write(diff_str), print(diff_str, end="")
-                for change in diff2:
+                for change in diff_n:
                     diff_str = str("- " + change + "\n")
                     diff_file.write(diff_str), print(diff_str, end="")
-
-
-"""def get_playlist_baseline():
-    # load playlist baseline
-    baseline = []
-    with open("user_playlists.txt", "r", encoding="utf-8") as playlist_file:
-        playlist_file.readline()  # discard timestamp
-        baseline = playlist_file.readlines()
-    return baseline"""
-
-
-"""def put_playlist_baseline(spotify, usernames):
-    with open("user_playlists.txt", "w", encoding="utf-8") as playlist_file:
-        playlist_file.write(
-            str(datetime.datetime.fromtimestamp(time.time()))+":\n")
-        for name in usernames:
-            playlist_file.write((name + "'s Playlists:\n"))
-            try:
-                playlists = spotify.user_playlists(usernames[name])
-                for playlist in playlists['items']:
-                    playlist_file.write("\t"+playlist['name']+"\n")
-                playlist_file.write("\n")
-            except(spotipy.exceptions.SpotifyException):
-                pass"""
-
-
-"""def get_playlist_changes(baseline, current):
-    if baseline == current:
-        return None
-    else:
-        diff = list(set(set(current)-set(baseline)))
-        diff = str(diff).replace("['\\t", "").replace("\\n']", "")
-        return diff"""

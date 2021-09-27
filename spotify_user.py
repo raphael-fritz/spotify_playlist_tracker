@@ -36,13 +36,13 @@ class Spotify_User:
         self.playlists = self.get_playlists()
 
     def get_playlists(self):
-        self.user_playlists = []
+        user_playlists = []
         try:
             playlists = self.spotify.user_playlists(self.id)
         except SpotifyException:
             pass
 
         for playlist in playlists["items"]:
-            self.user_playlists.append(playlist)
+            user_playlists.append(playlist)
 
-        return self.user_playlists
+        return user_playlists
