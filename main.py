@@ -23,9 +23,8 @@ import spotify_playlist_tracker as spt
 
 def main():
 
-    time_str = str(datetime.datetime.fromtimestamp(time.time()))
-    print(time_str, "\n")
-
+    print(datetime.datetime.fromtimestamp(time.time()))
+    
     # authenticate with spotify
     scope = "playlist-modify-public"
     spotify = spt.spotify_authentication(
@@ -36,5 +35,5 @@ def main():
     spt.update_dir_structure(user_list)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
