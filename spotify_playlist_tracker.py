@@ -8,16 +8,6 @@ from pathlib import Path
 from spotify_user import Spotify_User
 
 
-def rpl_bad_chars(string: str):
-    bad_chars = {'ä': 'ae', 'ö': 'oe', 'ü': 'ue',
-                 'Ä': 'AE', 'Ö': 'OE', 'Ü': 'UE', 'ß': 'ss', '.': '_'}
-    rpl_pattern = r"(\s)|([^\w\-_\.\ ])"
-
-    for char in bad_chars:
-        string = string.replace(char, bad_chars[char])
-    return re.sub(rpl_pattern, '_', string)
-
-
 def spotify_authentication(client_id, client_secrect, redirect_uri, scope):
     auth_manager = SpotifyOAuth(
         client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope)
@@ -49,6 +39,16 @@ def get_playlists(user: Spotify_User):
     return playlists
 
 
+def rpl_bad_chars(string: str):
+    bad_chars = {'ä': 'ae', 'ö': 'oe', 'ü': 'ue',
+                 'Ä': 'AE', 'Ö': 'OE', 'Ü': 'UE', 'ß': 'ss', '.': '_'}
+    rpl_pattern = r"(\s)|([^\w\-_\.\ ])"
+
+    for char in bad_chars:
+        string = string.replace(char, bad_chars[char])
+    return re.sub(rpl_pattern, '_', string)
+
+
 def get_path_strings(username: str, playlists: list):
     usr_str = rpl_bad_chars(username)
     pl_str = usr_str + "/playlists.txt"
@@ -74,70 +74,69 @@ def get_diff(list1: list, list2: list):
     return (diff_p, diff_n)
 
 
+def check_dir(path: str):
+    if not Path(path).is_dir():
+        print(path + " doesn't exist and will be created")
+        Path(path).mkdir()
+
+
+def check_file(path: str):
+    if not Path(path).is_file():
+        print(path + " doesn't exist and will be created")
+        Path(path).touch()
+
+
 def create_dir_structure(user_list):
     for user in user_list:
         usr_str, pl_str, pl_changes_str, pl_path_list, songs_list, songs_changes_list = get_path_strings(
             user.name, get_playlists(user))
 
-        # check if user directory exists and create if not
-        if not Path(usr_str).is_dir():
-            print(usr_str + "'s directory doesn't exist and will be created")
-            Path(usr_str).mkdir()
+        check_dir(usr_str)
+        check_file(pl_str)
+        check_file(pl_changes_str)
 
-        # check if playlists file exists and create if not
-        if not Path(pl_str).is_file():
-            print(pl_str + " doesn't exist and will be created")
-            Path(pl_str).touch()
-
-        # check if playlists_changes file exists and create if not
-        if not Path(pl_changes_str).is_file():
-            print(pl_changes_str + " doesn't exist and will be created")
-            Path(pl_changes_str).touch()
-
-        # check if playlist directories exists and create if not
         for i in range(pl_path_list.__len__()):
-
-            if not Path(pl_path_list[i]).is_dir():
-                print(pl_path_list[i] + " doesn't exist and will be created")
-                Path(pl_path_list[i]).mkdir()
-
-            if not Path(songs_list[i]).is_file():
-                print(songs_list[i] + " doesn't exist and will be created")
-                Path(songs_list[i]).touch()
-
-            if not Path(songs_changes_list[i]).is_file():
-                print(songs_changes_list[i] +
-                      " doesn't exist and will be created")
-                Path(songs_changes_list[i]).touch()
+            check_dir(pl_path_list[i])
+            check_file(songs_list[i])
+            check_file(songs_changes_list[i])
 
 
-def update_dir_structure(user_list):
+def read_base_file(path: str):
+    with open(path, "r", encoding="utf-8") as file:
+        lines = []
+        for line in file.readlines():
+            lines.append(line.strip("\n"))
+        return lines
+
+
+def write_base_file(path: str, base_list: list):
+    with open(path, "w", encoding="utf-8") as file:
+        for entry in base_list:
+            file.write(str(entry + "\n"))
+
+
+def write_diff_file(path: str, header: str, diff: "tuple[list, list]"):
+    with open(path, "a", encoding="utf-8") as file:
+        (diff_p, diff_n) = diff
+        if diff_p or diff_n:
+            print("\n" + header + ":")
+            file.write(
+                str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
+            for change in diff_p:
+                diff_str = str("+ " + change + "\n")
+                file.write(diff_str), print(diff_str, end="")
+            for change in diff_n:
+                diff_str = str("- " + change + "\n")
+                file.write(diff_str), print(diff_str, end="")
+
+
+def update_dir_structure(user_list: "list[Spotify_User]"):
     for user in user_list:
         pl_str, pl_changes_str = get_path_strings(
             user.name, get_playlists(user))[1:3]
         pl_current = get_playlists(user)
-        pl_baseline = []
+        pl_baseline = read_base_file(pl_str)
+        (diff_p, diff_n) = get_diff(pl_current, pl_baseline)
 
-        # read playlist file
-        with open(pl_str, "r", encoding="utf-8") as pl_file:
-            for line in pl_file.readlines():
-                pl_baseline.append(line.strip("\n"))
-
-        # write playlist file
-        with open(pl_str, "w", encoding="utf-8") as pl_file:
-            for pl in pl_current:
-                pl_file.write(str(pl+"\n"))
-
-        # write playlist changes file
-        with open(pl_changes_str, "a", encoding="utf-8") as diff_file:
-            (diff_p, diff_n) = get_diff(pl_current, pl_baseline)
-            if diff_p or diff_n:
-                print("\n" + user.name + ":")
-                diff_file.write(
-                    str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
-                for change in diff_p:
-                    diff_str = str("+ " + change + "\n")
-                    diff_file.write(diff_str), print(diff_str, end="")
-                for change in diff_n:
-                    diff_str = str("- " + change + "\n")
-                    diff_file.write(diff_str), print(diff_str, end="")
+        write_base_file(pl_str, pl_current)
+        write_diff_file(pl_changes_str, user.name, (diff_p, diff_n))
