@@ -28,9 +28,9 @@ def main():
     # authenticate with spotify
     scope = "playlist-modify-public"
     spotify = spt.spotify_authentication(
-        config.client_id, config.client_secrect, config.redirect_uri, scope=scope)
-
+        config.client_id, config.client_secrect, config.redirect_uri, scope=scope)    
     user_list = spt.get_spotify_users(spotify)
+    
     spt.create_dir_structure(user_list)
     spt.update_dir_structure(user_list)
 
