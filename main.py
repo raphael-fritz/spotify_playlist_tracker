@@ -1,19 +1,6 @@
 # spotify tracker
 #
 # to do:
-#   x writing out changes in playlists, output should look something like this:
-#       time
-#          user1:
-#               + playlist 2
-#               - playlist 1
-#          user2:
-#               ...
-#   x implement change tracking for removals
-#       -> implement + and - as indicators for addition/removal
-#   x apply all tracking for playlists to songs in playlists
-#   x cleanup
-#   x more cleanup
-#   x check paths for bad chars
 #   - write comments
 
 import time
