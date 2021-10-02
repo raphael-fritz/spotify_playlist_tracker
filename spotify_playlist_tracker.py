@@ -3,6 +3,7 @@ import datetime
 import spotipy
 import re
 from pathlib import Path
+from spotipy import SpotifyException
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyOAuth
 from spotify_user import Spotify_Playlist, Spotify_User
@@ -40,10 +41,13 @@ def get_playlists(user: Spotify_User):
 
 
 def get_tracks(spotify: Spotify, uri: str):
-    tracks = []
-    for track in Spotify_Playlist(spotify, uri).tracks:
-        tracks.append(str(track["artists"][0]["name"] + "-" + track["name"]))
-    return tracks
+    try:
+        tracks = []
+        for track in Spotify_Playlist(spotify, uri).tracks:
+            tracks.append(str(track["artists"][0]["name"] + "-" + track["name"]))
+        return tracks
+    except SpotifyException:
+        pass
 
 
 def rpl_bad_chars(string: str):
