@@ -2,10 +2,10 @@ import time
 import datetime
 import spotipy
 import re
+from pathlib import Path
 from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyOAuth
-from pathlib import Path
-from spotify_user import Spotify_User
+from spotify_user import Spotify_Playlist, Spotify_User
 
 
 def spotify_authentication(client_id, client_secrect, redirect_uri, scope):
@@ -27,7 +27,7 @@ def get_spotify_users(spotify: Spotify):
 
     user_list = []
     for username in usernames:
-        user = Spotify_User(spotify, username['name'], username['id'])
+        user = Spotify_User(spotify, username["name"], username["id"])
         user_list.append(user)
     return user_list
 
@@ -35,18 +35,25 @@ def get_spotify_users(spotify: Spotify):
 def get_playlists(user: Spotify_User):
     playlists = []
     for pl in user.playlists:
-        playlists.append(pl['name'])
+        playlists.append(pl["name"])
     return playlists
 
 
+def get_tracks(spotify: Spotify, uri: str):
+    tracks = []
+    for track in Spotify_Playlist(spotify, uri).tracks:
+        tracks.append(str(track["artists"][0]["name"] + "-" + track["name"]))
+    return tracks
+
+
 def rpl_bad_chars(string: str):
-    bad_chars = {'ä': 'ae', 'ö': 'oe', 'ü': 'ue',
-                 'Ä': 'AE', 'Ö': 'OE', 'Ü': 'UE', 'ß': 'ss', '.': '_'}
+    bad_chars = {"ä": "ae", "ö": "oe", "ü": "ue",
+                 "Ä": "AE", "Ö": "OE", "Ü": "UE", "ß": "ss", ".": "_"}
     rpl_pattern = r"(\s)|([^\w\-_\.\ ])"
 
     for char in bad_chars:
         string = string.replace(char, bad_chars[char])
-    return re.sub(rpl_pattern, '_', string)
+    return re.sub(rpl_pattern, "_", string)
 
 
 def get_path_strings(username: str, playlists: list):
@@ -130,13 +137,25 @@ def write_diff_file(path: str, header: str, diff: "tuple[list, list]"):
                 file.write(diff_str), print(diff_str, end="")
 
 
-def update_dir_structure(user_list: "list[Spotify_User]"):
+def update_dir_structure(spotify, user_list: "list[Spotify_User]"):
     for user in user_list:
-        pl_str, pl_changes_str = get_path_strings(
-            user.name, get_playlists(user))[1:3]
         pl_current = get_playlists(user)
+        pl_str, pl_changes_str = get_path_strings(
+            user.name, pl_current)[1:3]
         pl_baseline = read_base_file(pl_str)
         (diff_p, diff_n) = get_diff(pl_current, pl_baseline)
 
         write_base_file(pl_str, pl_current)
         write_diff_file(pl_changes_str, user.name, (diff_p, diff_n))
+
+        i = 0
+        songs_list, songs_changes_list = get_path_strings(
+            user.name, get_playlists(user))[4:6]
+        for playlist in user.playlists:
+            tracks_current = get_tracks(spotify, playlist["uri"])
+            tracks_baseline = read_base_file(songs_list[i])
+            (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
+
+            write_base_file(songs_list[i], tracks_current)
+            write_diff_file(songs_changes_list[i], str(user.name + ": " + playlist["name"]), (diff_p, diff_n))
+            i += 1
