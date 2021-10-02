@@ -11,7 +11,7 @@ import spotify_playlist_tracker as spt
 
 def main():
 
-    print(datetime.datetime.fromtimestamp(time.time()))
+    print(str(datetime.datetime.fromtimestamp(time.time())) + "\n")
     print("Authenticating with Spotify...")
     # authenticate with spotify
     scope = "playlist-modify-public"

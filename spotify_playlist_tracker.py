@@ -44,7 +44,8 @@ def get_tracks(spotify: Spotify, uri: str):
     try:
         tracks = []
         for track in Spotify_Playlist(spotify, uri).tracks:
-            tracks.append(str(track["artists"][0]["name"] + "-" + track["name"]))
+            tracks.append(
+                str(track["artists"][0]["name"] + "-" + track["name"]))
         return tracks
     except SpotifyException:
         pass
@@ -128,9 +129,9 @@ def write_base_file(path: str, base_list: list):
 
 def write_diff_file(path: str, header: str, diff: "tuple[list, list]"):
     with open(path, "a", encoding="utf-8") as file:
+        print("\n" + header + ":")
         (diff_p, diff_n) = diff
         if diff_p or diff_n:
-            print("\n" + header + ":")
             file.write(
                 str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
             for change in diff_p:
@@ -139,6 +140,8 @@ def write_diff_file(path: str, header: str, diff: "tuple[list, list]"):
             for change in diff_n:
                 diff_str = str("- " + change + "\n")
                 file.write(diff_str), print(diff_str, end="")
+        else:
+            print("x no changes")
 
 
 def update_dir_structure(spotify, user_list: "list[Spotify_User]"):
@@ -156,10 +159,15 @@ def update_dir_structure(spotify, user_list: "list[Spotify_User]"):
         songs_list, songs_changes_list = get_path_strings(
             user.name, get_playlists(user))[4:6]
         for playlist in user.playlists:
-            tracks_current = get_tracks(spotify, playlist["uri"])
-            tracks_baseline = read_base_file(songs_list[i])
-            (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
+            try:
+                tracks_current = get_tracks(spotify, playlist["uri"])
+                tracks_baseline = read_base_file(songs_list[i])
+                (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
 
-            write_base_file(songs_list[i], tracks_current)
-            write_diff_file(songs_changes_list[i], str(user.name + ": " + playlist["name"]), (diff_p, diff_n))
-            i += 1
+                write_base_file(songs_list[i], tracks_current)
+                write_diff_file(songs_changes_list[i], str(
+                    user.name + ": " + playlist["name"]), (diff_p, diff_n))
+                i += 1
+
+            except TypeError:
+                pass
