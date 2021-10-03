@@ -7,6 +7,9 @@ class Spotify_Playlist:
         self.spotify = spotify
         self.uri = uri
         self.tracks = self.get_tracks()
+        if not len(self.tracks):
+            raise Exception
+
 
     def get_tracks(self):
         offset = 0

@@ -2,6 +2,7 @@
 #
 # to do:
 #   - write comments
+#   x debug HTTP 404 Error
 
 import time
 import datetime

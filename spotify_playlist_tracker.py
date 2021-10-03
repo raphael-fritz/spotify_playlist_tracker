@@ -41,14 +41,11 @@ def get_playlists(user: Spotify_User):
 
 
 def get_tracks(spotify: Spotify, uri: str):
-    try:
-        tracks = []
-        for track in Spotify_Playlist(spotify, uri).tracks:
-            tracks.append(
-                str(track["artists"][0]["name"] + "-" + track["name"]))
-        return tracks
-    except SpotifyException:
-        pass
+    tracks = []
+    for track in Spotify_Playlist(spotify, uri).tracks:
+        tracks.append(str(track["artists"][0]["name"] + "-" + track["name"]))
+    return tracks
+
 
 
 def rpl_bad_chars(string: str):
@@ -129,8 +126,8 @@ def write_base_file(path: str, base_list: list):
 
 def write_diff_file(path: str, header: str, diff: "tuple[list, list]"):
     with open(path, "a", encoding="utf-8") as file:
-        print("\n" + header + ":")
         (diff_p, diff_n) = diff
+        print("\n" + header + ":")
         if diff_p or diff_n:
             file.write(
                 str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
@@ -165,9 +162,9 @@ def update_dir_structure(spotify, user_list: "list[Spotify_User]"):
                 (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
 
                 write_base_file(songs_list[i], tracks_current)
-                write_diff_file(songs_changes_list[i], str(
-                    user.name + ": " + playlist["name"]), (diff_p, diff_n))
+                write_diff_file(songs_changes_list[i], str(user.name + ": " + playlist["name"]), (diff_p, diff_n))
                 i += 1
-
-            except TypeError:
+            except Exception:
+                print("\n" + user.name + ": " + playlist["name"])
+                i+=1
                 pass
