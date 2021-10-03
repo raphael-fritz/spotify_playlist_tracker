@@ -2,16 +2,16 @@
 A simple Python programm to track the playlists and the tracks in them of a given list of users.
 
 ## Installation
-* Clone the repository from GitHub with `git clone https://github.com/raphael-fritz/spotify_playlist_tracker`.
+* Clone the repository from GitHub with `git clone https://github.com/raphael-fritz/spotify_playlist_tracker`
 * Navigate into the directory with `cd spotify_playlist_tracker/`
 
-* Install the required packages with `pip install -r requirements.txt`.
+* Install the required packages with `pip install -r requirements.txt`
 
 * Create a file called `config.py` the contens of which should look like this:
     ```python
     client_id       =   "xxxxxx_spotify_client_id_xxxxxxx"
     client_secrect  =   "xxxx_spotify_client_secrect_xxxx"
-    redirect_uri    =   "http://example.com"
+    redirect_uri    =   "http://localhost"
     ```
     For further information on these parameters look into the [Spotipy Authorization-Code-Flow Documentation](https://spotipy.readthedocs.io/en/2.18.0/#getting-started) or the [Spotify Web API Authorization-Guide](https://developer.spotify.com/documentation/general/guides/authorization-guide/).
 
