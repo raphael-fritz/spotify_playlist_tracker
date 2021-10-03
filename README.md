@@ -2,7 +2,10 @@
 A simple Python programm to track the playlists and the tracks in them of a given list of users.
 
 ## Installation
-* Install Spotipy with `pip install spotipy`.
+* Clone the repository from GitHub with `git clone https://github.com/raphael-fritz/spotify_playlist_tracker`.
+* Navigate into the directory with `cd spotify_playlist_tracker/`
+
+* Install the required packages with `pip install -r requirements.txt`.
 
 * Create a file called `config.py` the contens of which should look like this:
     ```python
@@ -22,5 +25,5 @@ A simple Python programm to track the playlists and the tracks in them of a give
     The Username can be anything you want but it must not include spaces or dots! 
 
 ## Usage
-Run the programm with `py main.py` or similar.
+Run the programm with `python3 main.py` or similar.
 
