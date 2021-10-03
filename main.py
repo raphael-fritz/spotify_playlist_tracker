@@ -24,7 +24,7 @@ def main():
     print("Creating/checking directory structure...")
     spt.create_dir_structure(user_list)
 
-    print("Updating directory structure...")
+    print("Updating directory structure...\n")
     spt.update_dir_structure(spotify, user_list)
 
     end = datetime.datetime.fromtimestamp(time.time())
