@@ -9,9 +9,9 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotify_user import Spotify_Playlist, Spotify_User
 
 
-def spotify_authentication(client_id, client_secrect, redirect_uri, scope):
+def spotify_authentication(client_id, client_secrect, redirect_uri, scope, openBrowser=True):
     auth_manager = SpotifyOAuth(
-        client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope)
+        client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope, open_browser=openBrowser)
     return spotipy.Spotify(auth_manager=auth_manager)
 
 
