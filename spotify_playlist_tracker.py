@@ -1,12 +1,11 @@
-import time
-import datetime
 import spotipy
 import re
-from pathlib import Path
-from spotipy import SpotifyException
-from spotipy.client import Spotify
 from spotipy.oauth2 import SpotifyOAuth
+from spotipy.client import Spotify
+from spotipy import SpotifyException
 from spotify_user import Spotify_Playlist, Spotify_User
+from pathlib import Path
+from datetime import datetime
 
 
 def spotify_authentication(client_id, client_secrect, redirect_uri, scope, openBrowser=True):
@@ -129,7 +128,7 @@ def write_diff_file(path: str, header: str, diff: "tuple[list, list]"):
         print(header + ":", end="")
         if diff_p or diff_n:
             file.write(
-                str("\n" + str(datetime.datetime.fromtimestamp(time.time())) + "\n"))
+                str("\n" + str(datetime.now()) + "\n"))
             for change in diff_p:
                 diff_str = str("+ " + change + "\n")
                 file.write(diff_str), print(diff_str, end="")
