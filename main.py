@@ -2,21 +2,26 @@
 #
 # to do:
 #   - write comments
-#   x debug HTTP 404 Error
 
-import spotify_playlist_tracker as spt
 import config
+import spotify_playlist_tracker as spt
 from datetime import datetime
+from sys import argv
 
 
-def main():
+def main(headless=False):
+    if len(argv) > 1:
+        if argv[1] == "-headless":
+            headless = True
+    if headless == True:
+        print("Headless-Mode enabled")
 
     start = datetime.now()
     print(str(start)+"\n")
+
     print("Authenticating with Spotify...")
-    scope = "playlist-modify-public"
     spotify = spt.spotify_authentication(
-        config.client_id, config.client_secrect, config.redirect_uri, scope=scope)
+        config.client_id, config.client_secrect, config.redirect_uri, scope="playlist-modify-public", openBrowser=headless)
     user_list = spt.get_spotify_users(spotify)
 
     print("Creating/checking directory structure...")

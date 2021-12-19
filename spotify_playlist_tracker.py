@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 
 
-def spotify_authentication(client_id, client_secrect, redirect_uri, scope, openBrowser=True):
+def spotify_authentication(client_id, client_secrect, redirect_uri, scope, openBrowser):
     auth_manager = SpotifyOAuth(
         client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope, open_browser=openBrowser)
     return spotipy.Spotify(auth_manager=auth_manager)
