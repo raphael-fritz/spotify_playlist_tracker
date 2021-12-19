@@ -5,7 +5,7 @@ A simple Python programm to track the playlists and the tracks in them of a give
 * Clone the repository from GitHub with `git clone https://github.com/raphael-fritz/spotify_playlist_tracker`
 * Navigate into the directory with `cd spotify_playlist_tracker/`
 
-* Install the required packages with `pip install -r requirements.txt`
+* Install the required packages with `python3 -m pip install -r requirements.txt`
 
 * Create a file called `config.py` the contens of which should look like this:
     ```python
