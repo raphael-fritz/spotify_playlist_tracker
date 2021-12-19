@@ -54,22 +54,18 @@ def rpl_bad_chars(string: str):
 
 
 def get_path_strings(username: str, playlists: list):
-    usr_str = rpl_bad_chars(username)
-    pl_str = usr_str + "/playlists.txt"
-    pl_changes_str = usr_str + "/playlists_changes.txt"
-    pl_path_list = []
+    usr_str = "data/" + rpl_bad_chars(username)
+    pl_str = usr_str + "/_playlists.txt"
+    pl_changes_str = usr_str + "/_playlists_changes.txt"
     songs_list = []
     songs_changes_list = []
 
     for playlist in playlists:
         playlist = rpl_bad_chars(playlist)
-        pl_path_list.append(str(usr_str + "/" + playlist))
-        songs_list.append(str(usr_str + "/" + playlist +
-                              "/" + playlist + "_songs.txt"))
-        songs_changes_list.append(
-            str(usr_str + "/" + playlist + "/" + playlist + "_songs_changes.txt"))
+        songs_list.append(str(usr_str + "/" + playlist + "_songs.txt"))
+        songs_changes_list.append(str(usr_str + "/" + playlist + "_songs_changes.txt"))
 
-    return usr_str, pl_str, pl_changes_str, pl_path_list, songs_list, songs_changes_list
+    return usr_str, pl_str, pl_changes_str, songs_list, songs_changes_list
 
 
 def get_diff(list1: list, list2: list):
@@ -92,15 +88,15 @@ def check_file(path: str):
 
 def create_dir_structure(user_list):
     for user in user_list:
-        usr_str, pl_str, pl_changes_str, pl_path_list, songs_list, songs_changes_list = get_path_strings(
+        usr_str, pl_str, pl_changes_str, songs_list, songs_changes_list = get_path_strings(
             user.name, get_playlists(user))
 
+        check_dir("data")
         check_dir(usr_str)
         check_file(pl_str)
         check_file(pl_changes_str)
 
-        for i in range(pl_path_list.__len__()):
-            check_dir(pl_path_list[i])
+        for i in range(len(songs_list)):
             check_file(songs_list[i])
             check_file(songs_changes_list[i])
 
@@ -149,7 +145,7 @@ def update_dir_structure(spotify, user_list: "list[Spotify_User]"):
 
         i = 0
         songs_list, songs_changes_list = get_path_strings(
-            user.name, get_playlists(user))[4:6]
+            user.name, get_playlists(user))[3:5]
         for playlist in user.playlists:
             try:
                 tracks_current = get_tracks(spotify, playlist["uri"])
