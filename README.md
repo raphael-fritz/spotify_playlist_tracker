@@ -25,5 +25,11 @@ A simple Python programm to track the playlists and the tracks in them of a give
     The Username can be anything you want but it must not include spaces or dots! 
 
 ## Usage
-Run the programm with `python3 main.py` or similar.
+* Run the programm with `python3 main.py` or similar.
+
+* For Usage on a headless device run `python3 main.py -headless`.
+
+* If you want to run this periodically use `python3 scheduler.py -t [seconds]`.  
+Headless-Mode will always be used and when `-t` is omitted the scheduler will default to 24h intervalls.
+
 
