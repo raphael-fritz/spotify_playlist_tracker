@@ -1,20 +1,17 @@
 import spotipy
 import re
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy.client import Spotify
-from spotipy import SpotifyException
 from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
 from datetime import datetime
 
 
 def spotify_authentication(client_id, client_secrect, redirect_uri, scope, openBrowser):
-    auth_manager = SpotifyOAuth(
+    auth_manager = spotipy.oauth2.SpotifyOAuth(
         client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope, open_browser=openBrowser)
-    return spotipy.Spotify(auth_manager=auth_manager)
+    return spotipy.client.Spotify(auth_manager=auth_manager)
 
 
-def get_spotify_users(spotify: Spotify):
+def get_spotify_users(spotify: spotipy.client.Spotify):
     usernames = []
     with open("usernames.txt") as username_list:
         for username in username_list:
@@ -39,7 +36,7 @@ def get_playlists(user: Spotify_User):
     return playlists
 
 
-def get_tracks(spotify: Spotify, uri: str):
+def get_tracks(spotify: spotipy.client.Spotify, uri: str):
     tracks = []
     for track in Spotify_Playlist(spotify, uri).tracks:
         tracks.append(str(track["artists"][0]["name"] + "-" + track["name"]))
