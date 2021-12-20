@@ -2,6 +2,8 @@
 #
 # to do:
 #   - write comments
+#   - add tracking for individual playlists
+#   - move to event driven structure
 
 import config
 import spotify_playlist_tracker as spt
