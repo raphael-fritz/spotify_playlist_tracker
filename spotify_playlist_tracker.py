@@ -21,18 +21,12 @@ def get_spotify_users(spotify: spotipy.client.Spotify) -> "list[Spotify_User]":
             }
             usernames.append(user)
 
-    user_list = []
+    user_list = []    
     for username in usernames:
         user = Spotify_User(spotify, username["name"], username["id"])
+        print("\n\t" + user.name + ": Success!", end="")
         user_list.append(user)
     return user_list
-
-
-"""def get_playlists(user: Spotify_User) -> "list[str]":
-    playlists = []
-    for pl in user.playlists:
-        playlists.append(pl["name"])
-    return playlists"""
 
 
 def get_tracks(spotify: spotipy.client.Spotify, uri: str) -> "list[str]":
@@ -112,20 +106,19 @@ def update_dir_structure(spotify:spotipy.client.Spotify, user_list: "list[Spotif
             
 
         write_base_file(user.pl_path, pl_current)
-        write_diff_file(user.pl_changes_path, user.name, (diff_p, diff_n))
+        write_diff_file(user.pl_changes_path, str("\t" + user.name), (diff_p, diff_n))
 
         for i in range(len(user.playlists)):
-            try:
-                tracks_current = get_tracks(spotify, user.playlists[i]["uri"])
-                tracks_baseline = read_base_file(user.song_path_list[i])
-                (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
+            #try:
+            tracks_current = user.playlists[i].track_names
+            tracks_baseline = read_base_file(user.song_path_list[i])
+            (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
 
-                write_base_file(user.song_path_list[i], tracks_current)
-                write_diff_file(user.song_changes_path_list[i], str(
-                    user.name + ": " + user.playlists[i]["name"]), (diff_p, diff_n))
+            write_base_file(user.song_path_list[i], tracks_current)
+            write_diff_file(user.song_changes_path_list[i], str("\t\t"+
+                user.name + ": " + user.playlists[i].name), (diff_p, diff_n))
+                #i += 1
+            """except ValueError:
+                print("\t\t" + user.name + ": " + user.playlists[i].name + ": ValueError")
                 i += 1
-            except ValueError:
-                print(user.name + ": " + user.playlists[i]["name"] + ": ValueError")
-                i += 1
-                pass
-        print()
+                pass"""
