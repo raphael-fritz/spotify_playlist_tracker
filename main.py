@@ -30,21 +30,24 @@ def main(headless=False):
         print("Authentication Error!", flush=True)
         exit()
     
-    print("Acquiring User data...", end="\t", flush=True)
-    user_list = spt.get_spotify_users(spotify)
-    print("\nSuccess!")
+    print("Reading Usernames.txt ...", flush=True)
+    usernames = spt.get_usernames()
 
-    print("Creating/checking directory structure...", end="\t", flush=True)
-    spt.create_dir_structure(user_list)
-    print("Success!")
-
-    print("Updating directory structure...", flush=True)
-    spt.update_dir_structure(spotify, user_list)
+    print("Acquiring User data...", flush=True)    
+    for user in usernames:
+        print(user["name"] + ": ")
+        user = spt.get_spotify_user(spotify, user)
+        spt.create_user_dir(user)
+        spt.update_user_dir(user)
+        print("-------------------------------------------------------------------------------")
+    print("Success!\n")
 
     end = datetime.now()
-    print("Success!\n")
     print("Elapsed time: ", (end-start))
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        exit()
