@@ -1,5 +1,5 @@
 import spotipy
-from spotify_user import Spotify_Playlist, Spotify_User
+from spotify_user import Spotify_User
 from pathlib import Path
 from datetime import datetime
 
@@ -8,19 +8,6 @@ def spotify_authentication(client_id:str, client_secrect:str, redirect_uri:str, 
     auth_manager = spotipy.oauth2.SpotifyOAuth(
         client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope, open_browser=openBrowser)
     return spotipy.client.Spotify(auth_manager=auth_manager)
-
-
-def get_usernames()->"dict[str, str]":
-    usernames = []
-    with open("usernames.txt") as username_list:
-        for username in username_list:
-            (name, id) = username.split()
-            user = {
-                "name": name,
-                "id": id
-            }
-            usernames.append(user)
-    return usernames
 
 
 def get_spotify_user(spotify: spotipy.client.Spotify, username:"dict[str, str]") -> Spotify_User:
@@ -36,13 +23,11 @@ def get_diff(list1: list, list2: list) -> tuple:
 
 def check_dir(path: str) -> None:
     if not Path(path).is_dir():
-        print(path + " doesn't exist and will be created")
         Path(path).mkdir()
 
 
 def check_file(path: str) -> None:
     if not Path(path).is_file():
-        print(path + " doesn't exist and will be created")
         Path(path).touch()
 
 
@@ -78,10 +63,10 @@ def write_diff_file(path: str, diff_list: "tuple[list, list]") -> None:
                 file.write(str("\n" + str(datetime.now()) + "\n"))
                 for change in diff_p:
                     diff_str = str("+ " + change + "\n")
-                    file.write(diff_str), print(diff_str, end="")
+                    file.write(diff_str)
                 for change in diff_n:
                     diff_str = str("- " + change + "\n")
-                    file.write(diff_str), print(diff_str, end="")
+                    file.write(diff_str)
     else:
         pass
 
@@ -95,7 +80,6 @@ def update_user_dir(user: Spotify_User) -> None:
 
     for i in range(len(user.playlists)):
         tracks_current = user.playlists[i].track_names
-        print(user.song_path_list[i])
         tracks_baseline = read_base_file(user.song_path_list[i])
         (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
 

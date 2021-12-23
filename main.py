@@ -9,6 +9,7 @@ import spotipy
 import config
 import spotify_playlist_tracker as spt
 from datetime import datetime
+from progressBar import progressBar
 from sys import argv
 
 
@@ -21,26 +22,29 @@ def main(headless=False):
 
     start = datetime.now()
 
-    print("Authenticating with Spotify...", end="\t", flush=True)
+    print("Authenticating with Spotify:", end="\t")
     spotify = spt.spotify_authentication(
         config.client_id, config.client_secrect, config.redirect_uri, scope="playlist-modify-public", openBrowser=headless)
     if type(spotify) == spotipy.client.Spotify:
-        print("Success!")
+        print(" Success!")
     else:
         print("Authentication Error!", flush=True)
         exit()
     
-    print("Reading Usernames.txt ...", flush=True)
-    usernames = spt.get_usernames()
+    usernames = []
+    with open("usernames.txt") as username_list:
+        for username in progressBar(username_list.readlines(), prefix="Reading Usernames.txt:\t\t", suffix="done", length=50):
+            (name, id) = username.split()
+            user = {
+                "name": name,
+                "id": id
+            }
+            usernames.append(user)
 
-    print("Acquiring User data...", flush=True)    
-    for user in usernames:
-        print(user["name"] + ": ")
+    for user in progressBar(usernames, prefix="Acquiring User data:\t\t", suffix="done", length=50):
         user = spt.get_spotify_user(spotify, user)
         spt.create_user_dir(user)
         spt.update_user_dir(user)
-        print("-------------------------------------------------------------------------------")
-    print("Success!\n")
 
     end = datetime.now()
     print("Elapsed time: ", (end-start))

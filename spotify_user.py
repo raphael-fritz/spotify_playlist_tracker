@@ -44,7 +44,7 @@ class Spotify_Playlist:
             offset = offset + len(response['items'])
         return tracks
 
-    def _get_track_names(self):
+    def _get_track_names(self)->"list[str]":
         track_names = []
         for track in self.tracks:
             track_names.append(str(track["artists"][0]["name"] + "-" + track["name"]))
@@ -74,7 +74,7 @@ class Spotify_User:
             songs_changes_list.append(str(self.user_path + "/" + playlist + "_songs_changes.txt"))
         return songs_list, songs_changes_list
 
-    def _get_playlists(self):
+    def _get_playlists(self)->"list[Spotify_Playlist]":
         user_playlists = []
         try:
             playlists = self.spotify.user_playlists(self.id)
