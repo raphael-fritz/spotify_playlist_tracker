@@ -20,8 +20,6 @@ def main(headless=False):
     if headless == True:
         print("Headless-Mode enabled")
 
-    start = datetime.now()
-
     print("Authenticating with Spotify:", end="\t")
     spotify = spt.spotify_authentication(
         config.client_id, config.client_secrect, config.redirect_uri, scope="playlist-modify-public", openBrowser=headless)
@@ -30,7 +28,7 @@ def main(headless=False):
     else:
         print("Authentication Error!", flush=True)
         exit()
-    
+
     usernames = []
     with open("usernames.txt") as username_list:
         for username in progressBar(username_list.readlines(), prefix="Reading Usernames.txt:\t\t", suffix="done", length=50):
@@ -46,12 +44,18 @@ def main(headless=False):
         spt.create_user_dir(user)
         spt.update_user_dir(user)
 
-    end = datetime.now()
-    print("Elapsed time: ", (end-start))
-
 
 if __name__ == "__main__":
+    print("Starting Time: ", datetime.now(),"\n")
+    start = datetime.now()
     try:
         main()
+
     except KeyboardInterrupt:
+        print("\nElapsed time: ", str(datetime.now()-start), flush=True)
         exit()
+
+    finally:
+        print("\nElapsed time: ", str(datetime.now()-start), flush=True)
+        exit()
+
