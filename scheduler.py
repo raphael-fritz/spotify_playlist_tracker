@@ -3,7 +3,6 @@ from time import sleep
 from main import main
 from sys import argv
 
-
 def scheduler():
     time_s = 24*3600
     try:
@@ -24,6 +23,11 @@ def scheduler():
         except KeyboardInterrupt:
             print("\nExiting scheduler...")
             exit()
+        except Exception as e:
+            with open("log.txt", "a+") as file:
+                file.write(str(e))
+                print(e)
+                sleep(60)
 
 
 if __name__ == "__main__":
