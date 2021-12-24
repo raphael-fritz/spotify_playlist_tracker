@@ -66,13 +66,13 @@ def main(headless=False):
         print("Authentication Error!\n", flush=True)
         exit()
 
-    spt.check_dir("data")    
+    spt.check_dir("data")
     track_playlists(spotify)
     track_users(spotify)
 
 
 if __name__ == "__main__":
-    print("Starting Time: ", datetime.now(),"\n")
+    print("Starting Time: ", datetime.now(), "\n")
     start = datetime.now()
     try:
         main()
@@ -81,4 +81,4 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\nElapsed time: ", str(datetime.now()-start), flush=True)
-        exit()      
+        exit()

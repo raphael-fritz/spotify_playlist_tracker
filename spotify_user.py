@@ -24,7 +24,6 @@ class Spotify_Playlist:
             raise ValueError
         self.track_names = self._get_track_names()
 
-
     def _get_tracks(self):
         offset = 0
         tracks = []
@@ -46,10 +45,11 @@ class Spotify_Playlist:
             offset = offset + len(response['items'])
         return tracks
 
-    def _get_track_names(self)->"list[str]":
+    def _get_track_names(self) -> "list[str]":
         track_names = []
         for track in self.tracks:
-            track_names.append(str(track["artists"][0]["name"] + "-" + track["name"]))
+            track_names.append(
+                str(track["artists"][0]["name"] + "-" + track["name"]))
         return track_names
 
 
@@ -61,13 +61,12 @@ class Spotify_User:
         self.id = user_id
         self.playlists = self._get_playlists()
         self.playlist_names = self._get_playlist_names()
-        self.user_path = str("data/" + rpl_bad_chars(self.name) + "/")
-        self.pl_path = str(self.user_path + "_playlists.txt")
-        self.pl_changes_path = str(self.user_path + "_playlists_changes.txt")
+        self.user_path = str("data/" + rpl_bad_chars(self.name))
+        self.pl_path = str(self.user_path + "/_playlists.txt")
+        self.pl_changes_path = str(self.user_path + "/_playlists_changes.txt")
         self.song_path_list, self.song_changes_path_list = self._get_song_paths()
 
-
-    def _get_playlists(self)->"list[Spotify_Playlist]":
+    def _get_playlists(self) -> "list[Spotify_Playlist]":
         user_playlists = []
         try:
             playlists = self.spotify.user_playlists(self.id)
@@ -76,20 +75,20 @@ class Spotify_User:
 
         for playlist in playlists["items"]:
             try:
-                user_playlists.append(Spotify_Playlist(self.spotify, playlist["name"], playlist["uri"]))
+                user_playlists.append(Spotify_Playlist(
+                    self.spotify, playlist["name"], playlist["uri"]))
             except ValueError:
                 pass
         return user_playlists
-        
-        
+
     def _get_song_paths(self) -> "tuple[list[str], list[str]]":
         songs_list = []
         songs_changes_list = []
         for playlist in self.playlists:
-            songs_list.append(str(self.user_path + playlist.path))
-            songs_changes_list.append(str(self.user_path + playlist.changes_path))
+            songs_list.append(str(self.user_path + "/" + playlist.path))
+            songs_changes_list.append(
+                str(self.user_path + "/" + playlist.changes_path))
         return songs_list, songs_changes_list
-
 
     def _get_playlist_names(self):
         playlist_names = []
