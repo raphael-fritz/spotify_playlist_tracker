@@ -17,16 +17,21 @@ def scheduler():
     print("Scheduler will run main every " + str(td) + "\n")
     while True:
         try:
+            print("Starting Time: ", datetime.now(), "\n")
+            start = datetime.now()
             main()
             print("Now sleeping until ", (datetime.now() + td))
+            print("\nElapsed time: ", str(datetime.now()-start), flush=True)
             sleep(time_s)
         except KeyboardInterrupt:
+            print("\nElapsed time: ", str(datetime.now()-start), flush=True)
             print("\nExiting scheduler...")
             exit()
         except Exception as e:
             with open("log.txt", "a+") as file:
-                file.write(str(e))
+                print("\nElapsed time: ", str(datetime.now()-start), flush=True)
                 print(e)
+                file.write(str(e))
                 sleep(60)
 
 
