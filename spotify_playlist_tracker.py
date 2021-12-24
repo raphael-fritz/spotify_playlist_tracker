@@ -83,7 +83,6 @@ def update_user_dir(user: Spotify_User) -> None:
 
     for i in range(len(user.playlists)):
         tracks_current = user.playlists[i].track_names
-        print(user.song_path_list[i])
         tracks_baseline = read_base_file(user.song_path_list[i])
         (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
 
