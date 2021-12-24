@@ -1,5 +1,5 @@
 import spotipy
-from spotify_user import Spotify_User
+from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
 from datetime import datetime
 
@@ -14,6 +14,9 @@ def get_spotify_user(spotify: spotipy.client.Spotify, username:"dict[str, str]")
     user = Spotify_User(spotify, username["name"], username["id"])
     return user
 
+def get_spotify_pl(spotify: spotipy.client.Spotify, pl_name:"dict[str, str]") -> Spotify_User:
+    pl = Spotify_Playlist(spotify, pl_name["name"], pl_name["id"])
+    return pl
 
 def get_diff(list1: list, list2: list) -> tuple:
     diff_p = list(set(set(list1)-set(list2)))
@@ -29,17 +32,6 @@ def check_dir(path: str) -> None:
 def check_file(path: str) -> None:
     if not Path(path).is_file():
         Path(path).touch()
-
-
-def create_user_dir(user:Spotify_User) -> None:
-    check_dir("data")
-    check_dir(user.user_path)
-    check_file(user.pl_path)
-    check_file(user.pl_changes_path)
-    for path in user.song_path_list:
-        check_file(path)
-    for path in user.song_changes_path_list:
-        check_file(path)
 
 
 def read_base_file(path: str) -> "list[str]":
@@ -71,6 +63,16 @@ def write_diff_file(path: str, diff_list: "tuple[list, list]") -> None:
         pass
 
 
+def create_user_dir(user:Spotify_User) -> None:
+    check_dir(user.user_path)
+    check_file(user.pl_path)
+    check_file(user.pl_changes_path)
+    for playlist in user.playlists:
+        check_file(playlist.path)
+    for playlist in user.playlists:
+        check_file(playlist.changes_path)
+
+
 def update_user_dir(user: Spotify_User) -> None:
     pl_current = user.playlist_names
     pl_baseline = read_base_file(user.pl_path)
@@ -85,3 +87,21 @@ def update_user_dir(user: Spotify_User) -> None:
 
         write_base_file(user.song_path_list[i], tracks_current)
         write_diff_file(user.song_changes_path_list[i], (diff_p, diff_n))
+
+
+def create_pl_dir(playlist:Spotify_Playlist) -> None:
+    pl_path = "data/playlists/"
+    check_dir(pl_path)
+    check_file(str(pl_path + playlist.path))
+    check_file(str(pl_path + playlist.changes_path))
+
+
+def update_pl_dir(playlist: Spotify_Playlist) -> None:
+    pl_path = "data/playlists/"
+    tracks_current = playlist.track_names
+    tracks_baseline = read_base_file(str(pl_path + playlist.path))
+    (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
+    write_base_file(str(pl_path + playlist.path), tracks_current)
+    write_diff_file(str(pl_path + playlist.changes_path), (diff_p, diff_n))
+
+        
