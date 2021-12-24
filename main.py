@@ -50,12 +50,9 @@ if __name__ == "__main__":
     start = datetime.now()
     try:
         main()
+        print("\nElapsed time: ", str(datetime.now()-start), flush=True)
+        exit()
 
     except KeyboardInterrupt:
         print("\nElapsed time: ", str(datetime.now()-start), flush=True)
-        exit()
-
-    finally:
-        print("\nElapsed time: ", str(datetime.now()-start), flush=True)
-        exit()
-
+        exit()      
