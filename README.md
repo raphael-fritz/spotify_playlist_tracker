@@ -17,12 +17,19 @@ A simple Python programm to track the playlists and the tracks in them of a give
 
 * Create a file called `usernames.txt` the contents of which should look like this:
     ```
-    username1 user_id1
-    username2 user_id2
+    user_name1 user_id1
+    user_name2 user_id2
     ...
     ```
     The Username and User-Id can be separated by a space, tab, multiple spaces or multiple tabs.
     The Username can be anything you want but it must not include spaces or dots! 
+
+    The same goes for `playlists.txt` which follows the same scheme:
+    ```
+    playlist_name1 playlist_id1
+    playlist_name2 playlist_id2
+    ...
+    ```
 
 ## Usage
 * Run the programm with `python3 main.py` or similar.
