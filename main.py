@@ -6,10 +6,11 @@
 #   - move to event driven structure
 #   - multithreading
 
+from os import error
 import spotipy
 import config
 import spotify_playlist_tracker as spt
-from datetime import datetime
+from datetime import datetime, timedelta
 from sys import argv
 
 
@@ -29,8 +30,9 @@ def main(headless=False):
         print("Authentication Error!\n", flush=True)
         exit()
 
-    spt.check_dir("data")
 
+    spt.check_dir("data")
+    """
     playlists = spt.get_playlists("playlists.txt")
     try:
         for playlist in progressBar(playlists, prefix="Acquiring Playlist data:\t", suffix="done", length=50):
@@ -39,15 +41,38 @@ def main(headless=False):
             spt.update_pl_dir(playlist)
     except ZeroDivisionError:
         print("playlists.txt is empty")
+    """
+
+    user = spt.get_spotify_user(spotify, {"name":"maflra", "id":"maflra"})
+    spt.create_user_dir(user)
+    spt.update_user_dir(user)
+    with open("log.txt", "a+",encoding="utf-8") as file:
+        file.write("-------------------------------------\n")
+        for change in spt.read_user_dir(user, start_date=(datetime.now()-timedelta(hours=12))):
+            file.write(change)
+            print(change)
 
     usernames = spt.get_usernames("usernames.txt")
+    with open("log2.txt", "w+", encoding="utf-8") as f:
+        for user in usernames:
+            user = spt.get_spotify_user(spotify, user)
+            f.write("\n"+user.name+": ")
+            for change in spt.read_user_dir(user, start_date=(datetime.now()-timedelta(hours=12))):
+                try:
+                    f.write(change)
+                    print(change)
+                except UnicodeEncodeError:
+                    print("error")
+                    pass
+
+    """
     try:
         for user in progressBar(usernames, prefix="Acquiring User data:\t\t", suffix="done", length=50):
             user = spt.get_spotify_user(spotify, user)
             spt.create_user_dir(user)
             spt.update_user_dir(user)
     except ZeroDivisionError:
-        print("usernames.txt is empty")
+        print("usernames.txt is empty")"""
 
 
 def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='x', printEnd="\r"):

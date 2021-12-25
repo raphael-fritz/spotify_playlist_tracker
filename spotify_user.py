@@ -10,6 +10,14 @@ def rpl_bad_chars(string: str) -> str:
         string = string.replace(char, bad_chars[char])
     return sub(r"(\s)|([^\w\-_\.\ ])", "_", string)
 
+class Spotify_Track:
+    def __init__(self, track ) -> None:
+        self.name = track["track"]["name"]
+        self.artist = track["track"]["artists"][0]["name"]
+        self.artist_and_name = self.artist + "-" + self.name
+        self.id = track["track"]["id"]
+        self.added_at = track["added_at"]
+
 
 class Spotify_Playlist:
 
@@ -22,8 +30,9 @@ class Spotify_Playlist:
         self.tracks = self._get_tracks()
         if not len(self.tracks):
             return None
+        self.track_names = self._get_track_names()
 
-    def _get_tracks(self):
+    def _get_tracks(self)->"list[Spotify_Track]":
         offset = 0
         tracks = []
         while True:
@@ -37,12 +46,18 @@ class Spotify_Playlist:
             for item in response['items']:
                 try:
                     if item["track"]["type"] == "track":
-                        tracks.append(str(item["track"]["artists"][0]["name"] + "-" + item["track"]["name"]))
+                        tracks.append(Spotify_Track(item))
                 except (TypeError, AttributeError):
                     pass
 
             offset = offset + len(response['items'])
         return tracks
+
+    def _get_track_names(self) -> "list[str]":
+        track_names = []
+        for track in self.tracks:
+            track_names.append(track.artist_and_name)
+        return track_names
 
 
 class Spotify_User:

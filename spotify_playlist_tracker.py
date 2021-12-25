@@ -1,7 +1,7 @@
 import spotipy
 from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def spotify_authentication(client_id: str, client_secrect: str, redirect_uri: str, scope: str, openBrowser: bool) -> spotipy.client.Spotify:
@@ -82,7 +82,7 @@ def update_user_dir(user: Spotify_User) -> None:
     write_diff_file(user.pl_changes_path, (diff_p, diff_n))
 
     for i in range(len(user.playlists)):
-        tracks_current = user.playlists[i].tracks
+        tracks_current = user.playlists[i].track_names
         tracks_baseline = read_base_file(user.song_path_list[i])
         (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
 
@@ -92,7 +92,7 @@ def update_user_dir(user: Spotify_User) -> None:
 
 def get_usernames(path: str) -> "list[dict[str, str]]":
     usernames = []
-    with open("usernames.txt") as username_list:
+    with open(path) as username_list:
         for username in username_list.readlines():
             (name, id) = username.split()
             user = {
@@ -112,7 +112,7 @@ def create_pl_dir(playlist: Spotify_Playlist) -> None:
 
 def update_pl_dir(playlist: Spotify_Playlist) -> None:
     pl_path = "data/playlists/"
-    tracks_current = playlist.tracks
+    tracks_current = playlist.track_names
     tracks_baseline = read_base_file(str(pl_path + playlist.path))
     (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
     write_base_file(str(pl_path + playlist.path), tracks_current)
@@ -132,6 +132,50 @@ def get_playlists(path: str) -> "list[dict[str, str]]":
     return playlists
 
 
-def read_user_dir(user: Spotify_User):
-    for path in user.song_changes_path_list:
-        print(open(path, "r", encoding="utf-8").readlines())
+def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
+    # currently only works for user/_playlists.txt and not individual playlists
+    path = user.pl_changes_path
+    lines = []
+    with open(path, "r", encoding="utf-8") as file:
+        lines = file.readlines()
+
+    timestamps, ids = [], []
+    for i, line in enumerate(lines):
+        try:
+            time = datetime.strptime(line.strip(), "%Y-%m-%d %H:%M:%S.%f")
+            timestamps.append(time)
+            ids.append(i)
+        except ValueError:
+            pass
+
+    changes = []
+    if start_date == None:
+        for i in range(len(timestamps)):
+            list = []
+            if timestamps[i] <= end_date:
+                list.append(lines[ids[i]].strip())
+                j = ids[i]+1
+                while j < len(lines) and (lines[j][0] == "+" or lines[j][0] == "-"):
+                    list.append(lines[j].strip())
+                    j += 1
+
+                chnge_string = ""
+                for item in list:
+                    chnge_string += str(item+"\n")
+                changes.append(chnge_string)
+        return changes
+    else:
+        for i in range(len(timestamps)):
+            list = []
+            if timestamps[i] <= end_date and timestamps[i] >= start_date:
+                list.append(lines[ids[i]].strip())
+                j = ids[i]+1
+                while j < len(lines) and (lines[j][0] == "+" or lines[j][0] == "-"):
+                    list.append(lines[j].strip())
+                    j += 1
+
+                chnge_string = ""
+                for item in list:
+                    chnge_string += str(item+"\n")
+                changes.append(chnge_string)
+        return changes
