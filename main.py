@@ -15,39 +15,44 @@ from sys import argv
 
 
 def track_users(spotify):
-    usernames = []
-    with open("usernames.txt") as username_list:
-        for username in progressBar(username_list.readlines(), prefix="Reading Usernames.txt:\t\t\t", suffix="done", length=50):
-            (name, id) = username.split()
-            user = {
-                "name": name,
-                "id": id
-            }
-            usernames.append(user)
+    try:
+        usernames = []
+        with open("usernames.txt") as username_list:
+            for username in progressBar(username_list.readlines(), prefix="Reading Usernames.txt:\t\t\t", suffix="done", length=50):
+                (name, id) = username.split()
+                user = {
+                    "name": name,
+                    "id": id
+                }
+                usernames.append(user)
 
-    for user in progressBar(usernames, prefix="Acquiring User data:\t\t\t", suffix="done", length=50):
-        user = spt.get_spotify_user(spotify, user)
-        spt.create_user_dir(user)
-        spt.update_user_dir(user)
-    print()
-
+        for user in progressBar(usernames, prefix="Acquiring User data:\t\t\t", suffix="done", length=50):
+            user = spt.get_spotify_user(spotify, user)
+            spt.create_user_dir(user)
+            spt.update_user_dir(user)
+        print()
+    except ZeroDivisionError:
+        print("usernames.txt is empty")
 
 def track_playlists(spotify):
-    playlists = []
-    with open("playlists.txt") as playlist_list:
-        for playlist in progressBar(playlist_list.readlines(), prefix="Reading Playlists.txt:\t\t\t", suffix="done", length=50):
-            (name, id) = playlist.split()
-            playlist = {
-                "name": name,
-                "id": id
-            }
-            playlists.append(playlist)
+    try:
+        playlists = []
+        with open("playlists.txt") as playlist_list:
+            for playlist in progressBar(playlist_list.readlines(), prefix="Reading Playlists.txt:\t\t\t", suffix="done", length=50):
+                (name, id) = playlist.split()
+                playlist = {
+                    "name": name,
+                    "id": id
+                }
+                playlists.append(playlist)
 
-    for playlist in progressBar(playlists, prefix="Acquiring Playlist data:\t\t", suffix="done", length=50):
-        playlist = spt.get_spotify_pl(spotify, playlist)
-        spt.create_pl_dir(playlist)
-        spt.update_pl_dir(playlist)
-    print()
+        for playlist in progressBar(playlists, prefix="Acquiring Playlist data:\t\t", suffix="done", length=50):
+            playlist = spt.get_spotify_pl(spotify, playlist)
+            spt.create_pl_dir(playlist)
+            spt.update_pl_dir(playlist)
+        print()
+    except ZeroDivisionError:
+        print("playlists.txt is empty")
 
 
 def main(headless=False):
