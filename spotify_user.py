@@ -37,7 +37,7 @@ class Spotify_Playlist:
             for item in response['items']:
                 try:
                     if item["track"]["type"] == "track":
-                        tracks.append(item["track"]["artists"][0]["name"], "-", item["track"]["name"])
+                        tracks.append(str(item["track"]["artists"][0]["name"], "-", item["track"]["name"]))
                 except (TypeError, AttributeError):
                     pass
 
