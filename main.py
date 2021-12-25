@@ -4,11 +4,11 @@
 #   - write comments
 #   x add tracking for individual playlists
 #   - move to event driven structure
+#   - multithreading
 
 import spotipy
 import config
 import spotify_playlist_tracker as spt
-import spotify_user as spu
 from datetime import datetime
 from progressBar import progressBar
 from sys import argv
@@ -33,6 +33,7 @@ def track_users(spotify):
         print()
     except ZeroDivisionError:
         print("usernames.txt is empty")
+
 
 def track_playlists(spotify):
     try:

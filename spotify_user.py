@@ -32,7 +32,6 @@ class Spotify_Playlist:
         while True:
             response = self.spotify.playlist_items(self.uri,
                                                    offset=offset,
-                                                   fields='items.track.id,total',
                                                    additional_types=['track'])
 
             if len(response['items']) == 0:
@@ -40,9 +39,10 @@ class Spotify_Playlist:
 
             for item in response['items']:
                 try:
-                    item = self.spotify.track(item['track']['id'])
-                    tracks.append(item)
-                except (TypeError, AttributeError, SpotifyException):
+                    if item["track"]["type"] == "track":
+                        item = self.spotify.track(item['track']['id'])
+                        tracks.append(item)
+                except (TypeError, AttributeError):
                     pass
 
             offset = offset + len(response['items'])
