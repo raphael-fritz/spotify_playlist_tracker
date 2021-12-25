@@ -3,6 +3,7 @@ from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
 from datetime import datetime
 
+
 def spotify_authentication(client_id: str, client_secrect: str, redirect_uri: str, scope: str, openBrowser: bool) -> spotipy.client.Spotify:
     auth_manager = spotipy.oauth2.SpotifyOAuth(
         client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope, open_browser=openBrowser)
@@ -89,6 +90,19 @@ def update_user_dir(user: Spotify_User) -> None:
         write_diff_file(user.song_changes_path_list[i], (diff_p, diff_n))
 
 
+def get_usernames(path: str) -> "list[dict[str, str]]":
+    usernames = []
+    with open("usernames.txt") as username_list:
+        for username in username_list.readlines():
+            (name, id) = username.split()
+            user = {
+                "name": name,
+                "id": id
+            }
+            usernames.append(user)
+    return usernames
+
+
 def create_pl_dir(playlist: Spotify_Playlist) -> None:
     pl_path = "data/playlists/"
     check_dir(pl_path)
@@ -103,3 +117,21 @@ def update_pl_dir(playlist: Spotify_Playlist) -> None:
     (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
     write_base_file(str(pl_path + playlist.path), tracks_current)
     write_diff_file(str(pl_path + playlist.changes_path), (diff_p, diff_n))
+
+
+def get_playlists(path: str) -> "list[dict[str, str]]":
+    playlists = []
+    with open(path) as playlist_list:
+        for playlist in playlist_list.readlines():
+            (name, id) = playlist.split()
+            playlist = {
+                "name": name,
+                "id": id
+            }
+            playlists.append(playlist)
+    return playlists
+
+
+def read_user_dir(user: Spotify_User):
+    for path in user.song_changes_path_list:
+        print(open(path, "r", encoding="utf-8").readlines())

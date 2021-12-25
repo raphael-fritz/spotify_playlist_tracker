@@ -10,50 +10,7 @@ import spotipy
 import config
 import spotify_playlist_tracker as spt
 from datetime import datetime
-from progressBar import progressBar
 from sys import argv
-
-
-def track_users(spotify):
-    try:
-        usernames = []
-        with open("usernames.txt") as username_list:
-            for username in progressBar(username_list.readlines(), prefix="Reading Usernames.txt:\t\t\t", suffix="done", length=50):
-                (name, id) = username.split()
-                user = {
-                    "name": name,
-                    "id": id
-                }
-                usernames.append(user)
-
-        for user in progressBar(usernames, prefix="Acquiring User data:\t\t\t", suffix="done", length=50):
-            user = spt.get_spotify_user(spotify, user)
-            spt.create_user_dir(user)
-            spt.update_user_dir(user)
-        print()
-    except ZeroDivisionError:
-        print("usernames.txt is empty")
-
-
-def track_playlists(spotify):
-    try:
-        playlists = []
-        with open("playlists.txt") as playlist_list:
-            for playlist in progressBar(playlist_list.readlines(), prefix="Reading Playlists.txt:\t\t\t", suffix="done", length=50):
-                (name, id) = playlist.split()
-                playlist = {
-                    "name": name,
-                    "id": id
-                }
-                playlists.append(playlist)
-
-        for playlist in progressBar(playlists, prefix="Acquiring Playlist data:\t\t", suffix="done", length=50):
-            playlist = spt.get_spotify_pl(spotify, playlist)
-            spt.create_pl_dir(playlist)
-            spt.update_pl_dir(playlist)
-        print()
-    except ZeroDivisionError:
-        print("playlists.txt is empty")
 
 
 def main(headless=False):
@@ -63,18 +20,67 @@ def main(headless=False):
     if headless == True:
         print("Headless-Mode enabled")
 
-    print("Authenticating with Spotify:", end="\t\t")
+    print("Authenticating with Spotify:", end="\t")
     spotify = spt.spotify_authentication(
         config.client_id, config.client_secrect, config.redirect_uri, scope="playlist-modify-public", openBrowser=headless)
     if type(spotify) == spotipy.client.Spotify:
-        print(" Success!\n")
+        print(" Success!")
     else:
         print("Authentication Error!\n", flush=True)
         exit()
 
     spt.check_dir("data")
-    track_playlists(spotify)
-    track_users(spotify)
+
+    playlists = spt.get_playlists("playlists.txt")
+    try:
+        for playlist in progressBar(playlists, prefix="Acquiring Playlist data:\t", suffix="done", length=50):
+            playlist = spt.get_spotify_pl(spotify, playlist)
+            spt.create_pl_dir(playlist)
+            spt.update_pl_dir(playlist)
+    except ZeroDivisionError:
+        print("playlists.txt is empty")
+
+    usernames = spt.get_usernames("usernames.txt")
+    try:
+        for user in progressBar(usernames, prefix="Acquiring User data:\t\t", suffix="done", length=50):
+            user = spt.get_spotify_user(spotify, user)
+            spt.create_user_dir(user)
+            spt.update_user_dir(user)
+    except ZeroDivisionError:
+        print("usernames.txt is empty")
+
+
+def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='x', printEnd="\r"):
+    """
+    Credit to https://stackoverflow.com/users/9761768/diogo
+
+    Call in a loop to create terminal progress bar
+    @params:
+        iterable    - Required  : iterable object (Iterable)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    total = len(iterable)
+    # Progress Bar Printing Function
+
+    def printProgressBar(iteration):
+        percent = ("{0:." + str(decimals) + "f}").format(100 *
+                                                         (iteration / float(total)))
+        filledLength = int(length * iteration // total)
+        bar = fill * filledLength + '-' * (length - filledLength)
+        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
+    # Initial Call
+    printProgressBar(0)
+    # Update Progress Bar
+    for i, item in enumerate(iterable):
+        yield item
+        printProgressBar(i + 1)
+    # Print New Line on Complete
+    print()
 
 
 if __name__ == "__main__":
