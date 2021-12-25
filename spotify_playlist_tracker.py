@@ -82,7 +82,7 @@ def update_user_dir(user: Spotify_User) -> None:
     write_diff_file(user.pl_changes_path, (diff_p, diff_n))
 
     for i in range(len(user.playlists)):
-        tracks_current = user.playlists[i].track_names
+        tracks_current = user.playlists[i].tracks
         tracks_baseline = read_base_file(user.song_path_list[i])
         (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
 
@@ -99,7 +99,7 @@ def create_pl_dir(playlist: Spotify_Playlist) -> None:
 
 def update_pl_dir(playlist: Spotify_Playlist) -> None:
     pl_path = "data/playlists/"
-    tracks_current = playlist.track_names
+    tracks_current = playlist.tracks
     tracks_baseline = read_base_file(str(pl_path + playlist.path))
     (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
     write_base_file(str(pl_path + playlist.path), tracks_current)

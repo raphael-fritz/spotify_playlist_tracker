@@ -20,11 +20,8 @@ class Spotify_Playlist:
         self.path = str(self.name + "_songs.txt")
         self.changes_path = str(self.name + "_songs_changes.txt")
         self.tracks = self._get_tracks()
-        if self.tracks == None:
-            raise ValueError
         if not len(self.tracks):
-            raise ValueError
-        self.track_names = self._get_track_names()
+            return None
 
     def _get_tracks(self):
         offset = 0
@@ -40,23 +37,12 @@ class Spotify_Playlist:
             for item in response['items']:
                 try:
                     if item["track"]["type"] == "track":
-                        item = self.spotify.track(item['track']['id'])
-                        tracks.append(item)
+                        tracks.append(item["track"]["artists"][0]["name"], "-", item["track"]["name"])
                 except (TypeError, AttributeError):
                     pass
 
             offset = offset + len(response['items'])
         return tracks
-
-    def _get_track_ids():
-        pass
-    
-    def _get_track_names(self) -> "list[str]":
-        track_names = []
-        for track in self.tracks:
-            track_names.append(
-                str(track["artists"][0]["name"] + "-" + track["name"]))
-        return track_names
 
 
 class Spotify_User:
