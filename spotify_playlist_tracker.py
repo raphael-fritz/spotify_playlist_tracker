@@ -3,7 +3,6 @@ from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
 from datetime import datetime
 
-
 def spotify_authentication(client_id: str, client_secrect: str, redirect_uri: str, scope: str, openBrowser: bool) -> spotipy.client.Spotify:
     auth_manager = spotipy.oauth2.SpotifyOAuth(
         client_id=client_id, client_secret=client_secrect, redirect_uri=redirect_uri, scope=scope, open_browser=openBrowser)
