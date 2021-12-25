@@ -30,24 +30,15 @@ def main(headless=False):
         print("Authentication Error!\n", flush=True)
         exit()
 
-
     spt.check_dir("data")
-
-    user = spt.get_spotify_user(spotify, {"name":"maflra", "id":"maflra"})
-    spt.create_user_dir(user)
-    spt.update_user_dir(user)
-    with open("log.txt", "a+",encoding="utf-8") as file:
-        file.write("-------------------------------------\n")
-        for change in spt.read_user_dir(user, start_date=(datetime.now()-timedelta(hours=12))):
-            print(change)
 
     usernames = spt.get_usernames("usernames.txt")
     for user in usernames:
         user = spt.get_spotify_user(spotify, user)
-        print("\n"+user.name+": ")
+        print(user.name+": ")
         for change in spt.read_user_dir(user, start_date=(datetime.now()-timedelta(hours=12))):
-                print("\t"+change)
-                
+            if not change == "":
+                print(change)
 
     playlists = spt.get_playlists("playlists.txt")
     try:
@@ -57,7 +48,6 @@ def main(headless=False):
             spt.update_pl_dir(playlist)
     except ZeroDivisionError:
         print("playlists.txt is empty")
-    
 
     try:
         for user in progressBar(usernames, prefix="Acquiring User data:\t\t", suffix="done", length=50):

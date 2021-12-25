@@ -10,8 +10,9 @@ def rpl_bad_chars(string: str) -> str:
         string = string.replace(char, bad_chars[char])
     return sub(r"(\s)|([^\w\-_\.\ ])", "_", string)
 
+
 class Spotify_Track:
-    def __init__(self, track ) -> None:
+    def __init__(self, track) -> None:
         self.name = track["track"]["name"]
         self.artist = track["track"]["artists"][0]["name"]
         self.artist_and_name = self.artist + "-" + self.name
@@ -29,10 +30,10 @@ class Spotify_Playlist:
         self.changes_path = str(self.name + "_songs_changes.txt")
         self.tracks = self._get_tracks()
         if not len(self.tracks):
-            return None
+            raise ValueError
         self.track_names = self._get_track_names()
 
-    def _get_tracks(self)->"list[Spotify_Track]":
+    def _get_tracks(self) -> "list[Spotify_Track]":
         offset = 0
         tracks = []
         while True:
