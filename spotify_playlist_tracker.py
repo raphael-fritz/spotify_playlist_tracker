@@ -51,7 +51,7 @@ def write_base_file(path: str, base_list: list) -> None:
         for entry in base_list:
             file.write(str(entry + "\n"))
 
-
+# now writes json
 def write_diff_file(path: str, diff_list: "tuple[list, list]") -> None:
     (diff_p, diff_n) = diff_list
     if diff_p or diff_n:
@@ -87,7 +87,7 @@ def create_user_dir(user: Spotify_User) -> None:
         check_file(user.song_path_list[i])
         check_file(user.song_changes_path_list[i])
 
-
+# baseline also as json?
 def update_user_dir(user: Spotify_User) -> None:
     pl_current = []
     for playlist in user.playlists:
@@ -171,7 +171,7 @@ def read_chng(idx: int, lines: "list[str]", prefix="", suffix="\n",) -> str:
         j += 1
     return chnge_string
 
-
+# needs to read json
 def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
     summary = []
     with open(user.pl_changes_path, "r", encoding="utf-8") as file:

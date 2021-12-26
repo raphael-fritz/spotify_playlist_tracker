@@ -5,6 +5,14 @@
 #   x add tracking for individual playlists
 #   - move to event driven structure
 #   - multithreading
+#
+#
+#
+#
+# branch: data_format:
+# to do:
+#   - add json i/o
+#   - scale event sourcing up from playlists -> user -> all users
 
 from os import error
 import spotipy
