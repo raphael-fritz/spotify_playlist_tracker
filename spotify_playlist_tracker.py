@@ -160,11 +160,11 @@ def read_chng(idx: int, lines: "list[str]", prefix="", suffix="\n",) -> str:
 
 
 def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
-    changes = []
+    summary = []
     with open(user.pl_changes_path, "r", encoding="utf-8") as file:
+        changes = []
         lines = file.readlines()
         timestamps = read_timestamps(lines)
-        changes.append(str("\t"+"playlists:"))
         if start_date == None:
             for time in timestamps:
                 if time["time"] <= end_date:
@@ -175,12 +175,17 @@ def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
                 if time["time"] <= end_date and time["time"] >= start_date:
                     changes.append(
                         read_chng(time["idx"], lines, prefix="\t\t"))
+                        
+        if not(changes==[]):
+            summary.append(str("\t"+"playlists:"))
+            for change in changes:
+                summary.append(change)
 
     for i, path in enumerate(user.song_changes_path_list):
         with open(path, "r", encoding="utf-8") as file:
+            changes = []
             lines = file.readlines()
             timestamps = read_timestamps(lines)
-            changes.append(str("\t"+user.playlists[i].name+":"))
             if start_date == None:
                 for time in timestamps:
                     if time["time"] <= end_date:
@@ -189,6 +194,11 @@ def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
             else:
                 for time in timestamps:
                     if time["time"] <= end_date and time["time"] >= start_date:
-                        changes.append(
-                            read_chng(time["idx"], lines, prefix="\t\t"))
-    return changes
+                        change = read_chng(time["idx"], lines, prefix="\t\t")
+                        changes.append(change)
+            
+            if not(changes==[]):
+                summary.append(str("\t"+user.playlists[i].name+":"))
+                for change in changes:
+                    summary.append(change)
+    return summary
