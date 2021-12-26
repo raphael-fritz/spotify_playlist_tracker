@@ -32,21 +32,21 @@ def main(headless=False):
 
     spt.check_dir("data")
 
-    user = spt.get_spotify_user(spotify, {"name":"maflra", "id":"maflra"})
+    """user = spt.get_spotify_user(spotify, {"name":"Foo", "id":"bar"})
     spt.create_user_dir(user)
     spt.update_user_dir(user)
     with open("summary.txt", "w+", encoding="utf-8") as f:
         start_date=(datetime.now()-timedelta(hours=6))
         changes = spt.read_user_dir(user, start_date=start_date)
         for i, change in enumerate(changes):
-            print(change)
+            #print(change)
             if i == 0:
                 f.write(str(user.name + ": \n"))
             f.write(str(change+"\n"))
             if i == len(changes):
-                f.write("\n")
+                f.write("\n")"""
 
-    """playlists = spt.get_playlists("playlists.txt")
+    playlists = spt.get_playlists("playlists.txt")
     try:
         for playlist in progressBar(playlists, prefix="Acquiring Playlist data:\t", suffix="done", length=50):
             playlist = spt.get_spotify_pl(spotify, playlist)
@@ -69,15 +69,15 @@ def main(headless=False):
         print("usernames.txt is empty")
 
     with open("summary.txt", "w+", encoding="utf-8") as f:
-        for user in progressBar(users, prefix="Writing Changes:\t\t", suffix="done", length=50):
+        for user in progressBar(users, prefix="Summarizing Changes:\t\t", suffix="done", length=50):
             changes = spt.read_user_dir(user, start_date=(
-                datetime.now()-timedelta(hours=6)))
+                datetime.now()-timedelta(hours=12)))
             for i, change in enumerate(changes):
                 if i == 0:
                     f.write(str(user.name + ": \n"))
                 f.write(str(change+"\n"))
                 if i == len(changes):
-                    f.write("\n")"""
+                    f.write("\n")
 
 def progressBar(iterable, prefix='', suffix='', decimals=1, length=100, fill='x', printEnd="\r"):
     """
