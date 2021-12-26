@@ -1,3 +1,4 @@
+import json
 from sys import prefix
 import spotipy
 from spotify_user import Spotify_Playlist, Spotify_User
@@ -54,16 +55,28 @@ def write_base_file(path: str, base_list: list) -> None:
 def write_diff_file(path: str, diff_list: "tuple[list, list]") -> None:
     (diff_p, diff_n) = diff_list
     if diff_p or diff_n:
+        changes = []
+
+        for change in diff_p:
+            change = {
+                "op": "+",
+                "data": change
+            }
+            changes.append(change)
+        for change in diff_n:
+            change = {
+                "op": "-",
+                "data": change
+            }
+            changes.append(change)
+        item = {
+            "timestamp": str(datetime.now()),
+            "data": changes
+        }
         with open(path, "a", encoding="utf-8") as file:
-            file.write(str("\n" + str(datetime.now()) + "\n"))
-            for change in diff_p:
-                diff_str = str("+ " + change + "\n")
-                file.write(diff_str)
-            for change in diff_n:
-                diff_str = str("- " + change + "\n")
-                file.write(diff_str)
+            json.dump(item, file)
     else:
-        pass
+        return None
 
 
 def create_user_dir(user: Spotify_User) -> None:
@@ -175,8 +188,8 @@ def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
                 if time["time"] <= end_date and time["time"] >= start_date:
                     changes.append(
                         read_chng(time["idx"], lines, prefix="\t\t"))
-                        
-        if not(changes==[]):
+
+        if not(changes == []):
             summary.append(str("\t"+"playlists:"))
             for change in changes:
                 summary.append(change)
@@ -196,8 +209,8 @@ def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
                     if time["time"] <= end_date and time["time"] >= start_date:
                         change = read_chng(time["idx"], lines, prefix="\t\t")
                         changes.append(change)
-            
-            if not(changes==[]):
+
+            if not(changes == []):
                 summary.append(str("\t"+user.playlists[i].name+":"))
                 for change in changes:
                     summary.append(change)
