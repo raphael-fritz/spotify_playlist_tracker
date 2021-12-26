@@ -1,3 +1,4 @@
+from sys import prefix
 import spotipy
 from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
@@ -75,7 +76,9 @@ def create_user_dir(user: Spotify_User) -> None:
 
 
 def update_user_dir(user: Spotify_User) -> None:
-    pl_current = user.playlist_names
+    pl_current = []
+    for playlist in user.playlists:
+        pl_current.append(playlist.name)
     pl_baseline = read_base_file(user.pl_path)
     (diff_p, diff_n) = get_diff(pl_current, pl_baseline)
     write_base_file(user.pl_path, pl_current)
@@ -132,50 +135,60 @@ def get_playlists(path: str) -> "list[dict[str, str]]":
     return playlists
 
 
-def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
-    # currently only works for user/_playlists.txt and not individual playlists
-    path = user.pl_changes_path
-    lines = []
-    with open(path, "r", encoding="utf-8") as file:
-        lines = file.readlines()
-
-    timestamps, ids = [], []
-    for i, line in enumerate(lines):
+def read_timestamps(lines: "list[str]") -> "list[dict[int, datetime]]":
+    timestamps = []
+    for idx, line in enumerate(lines):
         try:
             time = datetime.strptime(line.strip(), "%Y-%m-%d %H:%M:%S.%f")
-            timestamps.append(time)
-            ids.append(i)
+            time_id = {
+                "idx": idx,
+                "time": time
+            }
+            timestamps.append(time_id)
         except ValueError:
             pass
+    return timestamps
 
+
+def read_chng(idx: int, lines: "list[str]", prefix="", suffix="\n",) -> str:
+    j = idx+1
+    chnge_string = str(prefix+lines[idx].strip()+suffix)
+    while j < len(lines) and (lines[j][0] == "+" or lines[j][0] == "-"):
+        chnge_string += str(prefix+lines[j].strip()+suffix)
+        j += 1
+    return chnge_string
+
+
+def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
     changes = []
-    if start_date == None:
-        for i in range(len(timestamps)):
-            list = []
-            if timestamps[i] <= end_date:
-                list.append(lines[ids[i]].strip())
-                j = ids[i]+1
-                while j < len(lines) and (lines[j][0] == "+" or lines[j][0] == "-"):
-                    list.append(lines[j].strip())
-                    j += 1
+    with open(user.pl_changes_path, "r", encoding="utf-8") as file:
+        lines = file.readlines()
+        timestamps = read_timestamps(lines)
+        changes.append(str("\t"+"playlists:"))
+        if start_date == None:
+            for time in timestamps:
+                if time["time"] <= end_date:
+                    changes.append(
+                        read_chng(time["idx"], lines, prefix="\t\t"))
+        else:
+            for time in timestamps:
+                if time["time"] <= end_date and time["time"] >= start_date:
+                    changes.append(
+                        read_chng(time["idx"], lines, prefix="\t\t"))
 
-                chnge_string = ""
-                for item in list:
-                    chnge_string += str(item+"\n")
-                changes.append(chnge_string)
-        return changes
-    else:
-        for i in range(len(timestamps)):
-            list = []
-            if timestamps[i] <= end_date and timestamps[i] >= start_date:
-                list.append(lines[ids[i]].strip())
-                j = ids[i]+1
-                while j < len(lines) and (lines[j][0] == "+" or lines[j][0] == "-"):
-                    list.append(lines[j].strip())
-                    j += 1
-
-                chnge_string = ""
-                for item in list:
-                    chnge_string += str(item+"\n")
-                changes.append(chnge_string)
-        return changes
+    for i, path in enumerate(user.song_changes_path_list):
+        with open(path, "r", encoding="utf-8") as file:
+            lines = file.readlines()
+            timestamps = read_timestamps(lines)
+            changes.append(str("\t"+user.playlists[i].name+":"))
+            if start_date == None:
+                for time in timestamps:
+                    if time["time"] <= end_date:
+                        changes.append(
+                            read_chng(time["idx"], lines, prefix="\t\t"))
+            else:
+                for time in timestamps:
+                    if time["time"] <= end_date and time["time"] >= start_date:
+                        changes.append(
+                            read_chng(time["idx"], lines, prefix="\t\t"))
+    return changes

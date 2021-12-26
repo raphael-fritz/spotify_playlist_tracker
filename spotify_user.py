@@ -1,3 +1,4 @@
+from os import replace
 from spotipy import SpotifyException
 from re import sub
 
@@ -22,12 +23,13 @@ class Spotify_Track:
 
 class Spotify_Playlist:
 
-    def __init__(self, spotify, name, uri):
+    def __init__(self, spotify, name, uri:str):
         self.spotify = spotify
         self.uri = uri
+        self.id = uri.replace("spotify:playlist:","")
         self.name = rpl_bad_chars(name)
-        self.path = str(self.name + "_songs.txt")
-        self.changes_path = str(self.name + "_songs_changes.txt")
+        self.path = str(self.id + "_songs.txt")
+        self.changes_path = str(self.id + "_songs_changes.txt")
         self.tracks = self._get_tracks()
         if not len(self.tracks):
             raise ValueError
@@ -68,7 +70,6 @@ class Spotify_User:
         self.name = user_name
         self.id = user_id
         self.playlists = self._get_playlists()
-        self.playlist_names = self._get_playlist_names()
         self.user_path = str("data/" + rpl_bad_chars(self.name))
         self.pl_path = str(self.user_path + "/_playlists.txt")
         self.pl_changes_path = str(self.user_path + "/_playlists_changes.txt")
@@ -97,9 +98,3 @@ class Spotify_User:
             songs_changes_list.append(
                 str(self.user_path + "/" + playlist.changes_path))
         return songs_list, songs_changes_list
-
-    def _get_playlist_names(self):
-        playlist_names = []
-        for pl in self.playlists:
-            playlist_names.append(pl.name)
-        return playlist_names
