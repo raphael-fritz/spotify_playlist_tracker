@@ -14,6 +14,7 @@
 #   - add json i/o
 #   - scale event sourcing up from playlists -> user -> all users
 
+import json
 from os import error
 import spotipy
 import config
@@ -41,9 +42,11 @@ def main(headless=False):
 
     spt.check_log("data/events.txt")
     user = spt.get_spotify_user(spotify, {"name":"maflra", "id":"maflra"})
-    item = spt.update_user(user)
-    spt.read_event()
-    spt.cmp_tracks(item, item)
+    #item1 = spt.update_user(user)
+    with open("hello.txt", "w+") as e:
+        json.dump(spt.read_user_events(user), e, indent=4)
+    #spt.cmp_tracks(item1, item2)
+    #print(spt.search_item(item1, "maflra", "user"))
     
     """
     playlists = spt.get_playlists("playlists.txt")

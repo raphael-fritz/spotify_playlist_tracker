@@ -2,7 +2,7 @@ import json
 import spotipy
 from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 PATH = "events.txt"
 ENC = "utf-8"
@@ -44,21 +44,31 @@ def get_usernames(path: str) -> "list[dict[str, str]]":
     return usernames
 
 
-def cmp_tracks(item1, item2:"dict[str, str, str, list]",):
+def cmp_tracks(item1, item2: "dict[str, str, str, list]",):
     for (key1, key2) in zip(item1.keys(), item2.keys()):
-        if (item1[key1] == item2[key2]) and not key1==key2=="data":
+        if (item1[key1] == item2[key2]) and not key1 == key2 == "data":
             print(key1, item1[key1], key2, item2[key2])
-        elif key1==key2=="data":
+        elif key1 == key2 == "data":
             print(type(item1[key1]), type(item2[key2]))
-            if type(item1[key1])==type(item2[key2])==list:
+            if type(item1[key1]) == type(item2[key2]) == list:
                 for (entry1, entry2) in zip(item1[key1], item2[key2]):
-                    if type(entry1)==type(entry2)==dict:
+                    if type(entry1) == type(entry2) == dict:
                         cmp_tracks(entry1, entry2)
-                    else:
-                        print(entry1, entry2)
+                    elif type(entry1) == type(entry2) == str:
+                        diff_p = set(entry1)-set(entry2)
+                        diff_n = set(entry2)-set(entry1)
+                        print(diff_p, diff_n)
+
         else:
             print(key1, key2)
             print("hello")
+
+
+def get_diff(list1: list, list2: list) -> tuple:
+    diff_p = list(set(set(list1)-set(list2)))
+    diff_n = list(set(set(list2)-set(list1)))
+    return (diff_p, diff_n)
+
 
 """def cmp_tracks(item1:"dict[str, str, str, list[dict[str, str, str, list[str]]]]", item2):
     for (key1, key2) in zip(item1.keys(), item2.keys()):
@@ -68,72 +78,141 @@ def cmp_tracks(item1, item2:"dict[str, str, str, list]",):
             for entry1, entry2 in zip(item1[key1], item2[key2]):
                 print(entry1.keys())"""
 
-            
-
 
 def update_pl(playlist: Spotify_Playlist):
-    items = []    
+    items = []
     for track in playlist.tracks:
-        time=datetime.strptime(track.added_at, "%Y-%m-%dT%H:%M:%SZ")
+        time = datetime.strptime(track.added_at, "%Y-%m-%dT%H:%M:%SZ")
         item = {
-            "timestamp":str(time),
-            "op":"+",
-            "type":"track",
-            "data":[track.artist_and_name]
-            }
+            "timestamp": str(time),
+            "op": "+",
+            "type": "track",
+            "data": [
+                {
+                    "name": track.artist_and_name,
+                    "id": track.id
+                }
+            ]
+        }
         items.append(item)
 
     data = {
-        "id":playlist.id,
-        "type":"playlist",
-        "op":"+-",
-        "data":items
+        "id": playlist.id,
+        "type": "playlist",
+        "op": "+-",
+        "data": items
     }
     return data
 
 
 def update_user(user: Spotify_User):
-    items=[]
+    items = []
     for playlist in user.playlists:
         items.append(update_pl(playlist))
 
     data = {
-        "id":str(user.id),
-        "type":"playlist",
-        "op":"+-",
-        "data":items
+        "id": str(user.id),
+        "type": "user",
+        "op": "+-",
+        "data": items
     }
-    
+
     with open("log.txt", "w+") as file:
         file.write(json.dumps(data, indent=4))
-    with open(PATH, "w+", encoding=ENC) as file:
+    with open(PATH, "a+", encoding=ENC) as file:
         file.write(str(json.dumps(data)+"\n"))
     return data
 
 
-def read_event(idx=1):
+def read_user_events(user: Spotify_User):
     with open(PATH, "r", encoding=ENC) as file:
-        for i, line in enumerate(file.readlines()):
-            if i >= idx:
-                break
+        events = []
+        for line in file.readlines():
             item = json.loads(line)
-            for key in item.keys():
-                if type(item[key])==list:
-                    for entry in item[key]:
-                        print(type(entry))
-                        for key in entry.keys():
-                            if type(entry[key]) == list:
-                                for data in entry[key]:
-                                    for key in data.keys():
-                                        if type(data[key]) == list:
-                                            for string in data[key]:
-                                                print(str("\t\t\t"+key+":"+string))
-                                        else:
-                                            print(str("\t\t"+key+":"+data[key]))
-                            else:
-                                print("\t"+str(key)+":"+str(entry[key]))
+            res = search_item(item, "maflra", "user")
+            if res != None:
+                events.append(res)
+            res = search_item(item, "6K91vRPSfuUUIvd8xc82Hp", "playlist")
+            if res != None:
+                events.append(res)
+            res = search_item(item, "3JKfyBJZvr3hENnSokG7RQ", "track")
+            if res != None:
+                events.append(res)
+            break
+        return events
+
+
+def search_item(item: "dict[str, str, str, list]", id_, type_):
+    if type_ == "playlist" or type_ == "user":
+        try:
+            if item["id"] == id_ and item["type"] == type_:
+                return item
+            elif type(item["data"]) == list:
+                items = []
+                for entry in item["data"]:
+                    if type(entry) == dict:
+                        it = search_item(entry, id_, type_)
+                        if it != None:
+                            items.append(it)
+                if items != []:
+                    return {
+                        "id": item["id"],
+                        "type": item["type"],
+                        "op": item["op"],
+                        "data": [
+                            {
+                                "id": entry["id"],
+                                "op":entry["op"],
+                                "type":entry["type"],
+                                "data":items
+                            }
+                        ]
+                    }
+
                 else:
-                    print(str(key+":"+item[key]))
-
-
-            
+                    return None
+            else:
+                return None
+        except KeyError:
+            return None
+    elif type_ == "track":
+        if type(item) == dict:
+            for entry in item["data"]:
+                if entry["id"] == id_ and item["type"] == type_:
+                    return entry
+                try:
+                    if type(entry["data"]) == list:
+                        items = []
+                        for line in entry["data"]:
+                            if type(line) == dict:
+                                it = search_item(line, id_, type_)
+                                if it != None:
+                                    items.append(it)
+                        if items != []:
+                            return {
+                                "id": item["id"],
+                                "type": item["type"],
+                                "op": item["op"],
+                                "data": [
+                                    {
+                                        "id": entry["id"],
+                                        "op":entry["op"],
+                                        "type":entry["type"],
+                                        "data":[
+                                            {
+                                                "type": str(type_),
+                                                "timestamp": line["timestamp"],
+                                                "op":line["op"],
+                                                "data":items
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                    else:
+                        return None
+                except KeyError:
+                    return None
+                else:
+                    return None
+            return None
