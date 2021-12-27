@@ -38,21 +38,12 @@ def main(headless=False):
         print("Authentication Error!\n", flush=True)
         exit()
 
-    spt.check_dir("data")
 
+    spt.check_log("data/events.txt")
     user = spt.get_spotify_user(spotify, {"name":"maflra", "id":"maflra"})
-    spt.create_user_dir(user)
-    spt.update_user_dir(user)
-    with open("summary.txt", "w+", encoding="utf-8") as f:
-        start_date=(datetime.now()-timedelta(hours=12))
-        changes = spt.read_user_dir(user, start_date=start_date)
-        for i, change in enumerate(changes):
-            #print(change)
-            if i == 0:
-                f.write(str(user.name + ": \n"))
-            f.write(str(change+"\n"))
-            if i == len(changes):
-                f.write("\n")
+    item = spt.update_user(user)
+    spt.read_event()
+    spt.cmp_tracks(item, item)
     
     """
     playlists = spt.get_playlists("playlists.txt")

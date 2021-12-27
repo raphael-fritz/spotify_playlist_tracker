@@ -1,9 +1,11 @@
 import json
-from sys import prefix
 import spotipy
 from spotify_user import Spotify_Playlist, Spotify_User
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, time
+
+PATH = "events.txt"
+ENC = "utf-8"
 
 
 def spotify_authentication(client_id: str, client_secrect: str, redirect_uri: str, scope: str, openBrowser: bool) -> spotipy.client.Spotify:
@@ -22,88 +24,11 @@ def get_spotify_pl(spotify: spotipy.client.Spotify, pl_name: "dict[str, str]") -
     return pl
 
 
-def get_diff(list1: list, list2: list) -> tuple:
-    diff_p = list(set(set(list1)-set(list2)))
-    diff_n = list(set(set(list2)-set(list1)))
-    return (diff_p, diff_n)
-
-
-def check_dir(path: str) -> None:
-    if not Path(path).is_dir():
-        Path(path).mkdir()
-
-
-def check_file(path: str) -> None:
+def check_log(path: str) -> None:
     if not Path(path).is_file():
         Path(path).touch()
-
-
-def read_base_file(path: str) -> "list[str]":
-    with open(path, "r", encoding="utf-8") as file:
-        lines = []
-        for line in file.readlines():
-            lines.append(line.strip("\n"))
-        return lines
-
-
-def write_base_file(path: str, base_list: list) -> None:
-    with open(path, "w", encoding="utf-8") as file:
-        for entry in base_list:
-            file.write(str(entry + "\n"))
-
-# now writes json
-def write_diff_file(path: str, diff_list: "tuple[list, list]") -> None:
-    (diff_p, diff_n) = diff_list
-    if diff_p or diff_n:
-        changes = []
-
-        for change in diff_p:
-            change = {
-                "op": "+",
-                "data": change
-            }
-            changes.append(change)
-        for change in diff_n:
-            change = {
-                "op": "-",
-                "data": change
-            }
-            changes.append(change)
-        item = {
-            "timestamp": str(datetime.now()),
-            "data": changes
-        }
-        with open(path, "a", encoding="utf-8") as file:
-            json.dump(item, file)
-    else:
-        return None
-
-
-def create_user_dir(user: Spotify_User) -> None:
-    check_dir(user.user_path)
-    check_file(user.pl_path)
-    check_file(user.pl_changes_path)
-    for i in range(len(user.playlists)):
-        check_file(user.song_path_list[i])
-        check_file(user.song_changes_path_list[i])
-
-# baseline also as json?
-def update_user_dir(user: Spotify_User) -> None:
-    pl_current = []
-    for playlist in user.playlists:
-        pl_current.append(playlist.name)
-    pl_baseline = read_base_file(user.pl_path)
-    (diff_p, diff_n) = get_diff(pl_current, pl_baseline)
-    write_base_file(user.pl_path, pl_current)
-    write_diff_file(user.pl_changes_path, (diff_p, diff_n))
-
-    for i in range(len(user.playlists)):
-        tracks_current = user.playlists[i].track_names
-        tracks_baseline = read_base_file(user.song_path_list[i])
-        (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
-
-        write_base_file(user.song_path_list[i], tracks_current)
-        write_diff_file(user.song_changes_path_list[i], (diff_p, diff_n))
+    global PATH
+    PATH = path
 
 
 def get_usernames(path: str) -> "list[dict[str, str]]":
@@ -119,99 +44,96 @@ def get_usernames(path: str) -> "list[dict[str, str]]":
     return usernames
 
 
-def create_pl_dir(playlist: Spotify_Playlist) -> None:
-    pl_path = "data/playlists/"
-    check_dir(pl_path)
-    check_file(str(pl_path + playlist.path))
-    check_file(str(pl_path + playlist.changes_path))
-
-
-def update_pl_dir(playlist: Spotify_Playlist) -> None:
-    pl_path = "data/playlists/"
-    tracks_current = playlist.track_names
-    tracks_baseline = read_base_file(str(pl_path + playlist.path))
-    (diff_p, diff_n) = get_diff(tracks_current, tracks_baseline)
-    write_base_file(str(pl_path + playlist.path), tracks_current)
-    write_diff_file(str(pl_path + playlist.changes_path), (diff_p, diff_n))
-
-
-def get_playlists(path: str) -> "list[dict[str, str]]":
-    playlists = []
-    with open(path) as playlist_list:
-        for playlist in playlist_list.readlines():
-            (name, id) = playlist.split()
-            playlist = {
-                "name": name,
-                "id": id
-            }
-            playlists.append(playlist)
-    return playlists
-
-
-def read_timestamps(lines: "list[str]") -> "list[dict[int, datetime]]":
-    timestamps = []
-    for idx, line in enumerate(lines):
-        try:
-            time = datetime.strptime(line.strip(), "%Y-%m-%d %H:%M:%S.%f")
-            time_id = {
-                "idx": idx,
-                "time": time
-            }
-            timestamps.append(time_id)
-        except ValueError:
-            pass
-    return timestamps
-
-
-def read_chng(idx: int, lines: "list[str]", prefix="", suffix="\n",) -> str:
-    j = idx+1
-    chnge_string = str(prefix+lines[idx].strip()+suffix)
-    while j < len(lines) and (lines[j][0] == "+" or lines[j][0] == "-"):
-        chnge_string += str(prefix+lines[j].strip()+suffix)
-        j += 1
-    return chnge_string
-
-# needs to read json
-def read_user_dir(user: Spotify_User, start_date=None, end_date=datetime.now()):
-    summary = []
-    with open(user.pl_changes_path, "r", encoding="utf-8") as file:
-        changes = []
-        lines = file.readlines()
-        timestamps = read_timestamps(lines)
-        if start_date == None:
-            for time in timestamps:
-                if time["time"] <= end_date:
-                    changes.append(
-                        read_chng(time["idx"], lines, prefix="\t\t"))
+def cmp_tracks(item1, item2:"dict[str, str, str, list]",):
+    for (key1, key2) in zip(item1.keys(), item2.keys()):
+        if (item1[key1] == item2[key2]) and not key1==key2=="data":
+            print(key1, item1[key1], key2, item2[key2])
+        elif key1==key2=="data":
+            print(type(item1[key1]), type(item2[key2]))
+            if type(item1[key1])==type(item2[key2])==list:
+                for (entry1, entry2) in zip(item1[key1], item2[key2]):
+                    if type(entry1)==type(entry2)==dict:
+                        cmp_tracks(entry1, entry2)
+                    else:
+                        print(entry1, entry2)
         else:
-            for time in timestamps:
-                if time["time"] <= end_date and time["time"] >= start_date:
-                    changes.append(
-                        read_chng(time["idx"], lines, prefix="\t\t"))
+            print(key1, key2)
+            print("hello")
 
-        if not(changes == []):
-            summary.append(str("\t"+"playlists:"))
-            for change in changes:
-                summary.append(change)
+"""def cmp_tracks(item1:"dict[str, str, str, list[dict[str, str, str, list[str]]]]", item2):
+    for (key1, key2) in zip(item1.keys(), item2.keys()):
+        if (item1[key1] != item2[key2]) and not key1==key2=="data":
+            print("cannot compare")
+        elif key1==key2=="data":
+            for entry1, entry2 in zip(item1[key1], item2[key2]):
+                print(entry1.keys())"""
 
-    for i, path in enumerate(user.song_changes_path_list):
-        with open(path, "r", encoding="utf-8") as file:
-            changes = []
-            lines = file.readlines()
-            timestamps = read_timestamps(lines)
-            if start_date == None:
-                for time in timestamps:
-                    if time["time"] <= end_date:
-                        changes.append(
-                            read_chng(time["idx"], lines, prefix="\t\t"))
-            else:
-                for time in timestamps:
-                    if time["time"] <= end_date and time["time"] >= start_date:
-                        change = read_chng(time["idx"], lines, prefix="\t\t")
-                        changes.append(change)
+            
 
-            if not(changes == []):
-                summary.append(str("\t"+user.playlists[i].name+":"))
-                for change in changes:
-                    summary.append(change)
-    return summary
+
+def update_pl(playlist: Spotify_Playlist):
+    items = []    
+    for track in playlist.tracks:
+        time=datetime.strptime(track.added_at, "%Y-%m-%dT%H:%M:%SZ")
+        item = {
+            "timestamp":str(time),
+            "op":"+",
+            "type":"track",
+            "data":[track.artist_and_name]
+            }
+        items.append(item)
+
+    data = {
+        "id":playlist.id,
+        "type":"playlist",
+        "op":"+-",
+        "data":items
+    }
+    return data
+
+
+def update_user(user: Spotify_User):
+    items=[]
+    for playlist in user.playlists:
+        items.append(update_pl(playlist))
+
+    data = {
+        "id":str(user.id),
+        "type":"playlist",
+        "op":"+-",
+        "data":items
+    }
+    
+    with open("log.txt", "w+") as file:
+        file.write(json.dumps(data, indent=4))
+    with open(PATH, "w+", encoding=ENC) as file:
+        file.write(str(json.dumps(data)+"\n"))
+    return data
+
+
+def read_event(idx=1):
+    with open(PATH, "r", encoding=ENC) as file:
+        for i, line in enumerate(file.readlines()):
+            if i >= idx:
+                break
+            item = json.loads(line)
+            for key in item.keys():
+                if type(item[key])==list:
+                    for entry in item[key]:
+                        print(type(entry))
+                        for key in entry.keys():
+                            if type(entry[key]) == list:
+                                for data in entry[key]:
+                                    for key in data.keys():
+                                        if type(data[key]) == list:
+                                            for string in data[key]:
+                                                print(str("\t\t\t"+key+":"+string))
+                                        else:
+                                            print(str("\t\t"+key+":"+data[key]))
+                            else:
+                                print("\t"+str(key)+":"+str(entry[key]))
+                else:
+                    print(str(key+":"+item[key]))
+
+
+            
