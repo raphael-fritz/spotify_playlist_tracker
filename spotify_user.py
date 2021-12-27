@@ -1,4 +1,3 @@
-from os import replace
 from spotipy import SpotifyException
 from re import sub
 
@@ -23,10 +22,10 @@ class Spotify_Track:
 
 class Spotify_Playlist:
 
-    def __init__(self, spotify, name, uri:str):
+    def __init__(self, spotify, name, uri: str):
         self.spotify = spotify
         self.uri = uri
-        self.id = uri.replace("spotify:playlist:","")
+        self.id = uri.replace("spotify:playlist:", "")
         self.name = rpl_bad_chars(name)
         self.path = str(self.id + "_songs.txt")
         self.changes_path = str(self.id + "_songs_changes.txt")
